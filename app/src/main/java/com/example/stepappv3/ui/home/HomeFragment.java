@@ -1,5 +1,6 @@
 package com.example.stepappv3.ui.home;
 
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -38,6 +39,8 @@ public class HomeFragment extends androidx.fragment.app.Fragment {
         setupPermissions();
     }
 
+
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -54,10 +57,17 @@ public class HomeFragment extends androidx.fragment.app.Fragment {
         stepsProgress = view.findViewById(R.id.progressBar);
         home = new ViewModelProvider(this).get(HomeViewModel.class);
 
+        // NEW — Scanner button
+        MaterialButton openScannerButton = view.findViewById(R.id.openScannerButton);
+        openScannerButton.setOnClickListener(v -> {
+            Intent intent = new Intent(getActivity(), com.example.stepappv3.ReceiptScannerActivity.class);
+            startActivity(intent);
+        });
+
         setupObservers();
         setupClickListeners();
-
     }
+
 
     private void setupPermissions() {
         requestPermissionLauncher = registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
@@ -139,4 +149,6 @@ public class HomeFragment extends androidx.fragment.app.Fragment {
                 })
                 .show();
     }
+
+
 }

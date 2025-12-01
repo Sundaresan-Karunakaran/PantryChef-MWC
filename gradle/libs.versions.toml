@@ -13,6 +13,7 @@ room = '2.8.3'
 playServicesAds = "24.7.0"
 playServicesMaps = "19.2.0"
 cardview = "1.0.0"
+engageCore = "1.5.10"
 
 [libraries]
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -30,6 +31,7 @@ room-compiler = {group = 'androidx.room', name = 'room-compiler', version.ref = 
 play-services-ads = { group = "com.google.android.gms", name = "play-services-ads", version.ref = "playServicesAds" }
 play-services-maps = { group = "com.google.android.gms", name = "play-services-maps", version.ref = "playServicesMaps" }
 cardview = { group = "androidx.cardview", name = "cardview", version.ref = "cardview" }
+engage-core = { group = "com.google.android.engage", name = "engage-core", version.ref = "engageCore" }
 
 
 [plugins]
