@@ -132,7 +132,7 @@ public class ReceiptScannerActivity extends AppCompatActivity {
         progressBar.setVisibility(View.VISIBLE);
         tvResult.setText("Processing...");
 
-        String apiKey = "AIzaSyCS9ARUfPowg8xjiQndSxCEmuxaFKrXQrs";
+        String apiKey = "<geminiapi>";
         GeminiReceiptParser parser = new GeminiReceiptParser(apiKey);
 
         parser.parseReceipt(bitmap)
