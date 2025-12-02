@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="8dp">
+
+    <!-- Item name -->
+    <TextView
+        android:id="@+id/textItemName"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Milk"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/textItemQuantity"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintHorizontal_bias="0.0" />
+
+    <!-- Quantity + unit -->
+    <TextView
+        android:id="@+id/textItemQuantity"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="500 ml"
+        android:textSize="14sp"
+        app:layout_constraintEnd_toStartOf="@id/buttonDecrease"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginEnd="8dp" />
+
+    <!-- Decrease button -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/buttonDecrease"
+        style="?attr/materialIconButtonOutlinedStyle"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:text="-"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/buttonIncrease" />
+
+    <!-- Increase button -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/buttonIncrease"
+        style="?attr/materialIconButtonOutlinedStyle"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:text="+"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/buttonDelete"
+        android:layout_marginStart="4dp" />
+
+    <!-- Delete button -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/buttonDelete"
+        style="?attr/materialIconButtonOutlinedStyle"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:text="X"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

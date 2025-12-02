@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/mobile_navigation"
+    app:startDestination="@id/navigation_home">
+
+    <!-- HOME -->
+    <fragment
+        android:id="@+id/navigation_home"
+        android:name="com.example.stepappv3.ui.home.HomeFragment"
+        android:label="Home"
+        tools:layout="@layout/fragment_home" />
+
+    <!-- PANTRY -->
+    <fragment
+        android:id="@+id/navigation_pantry"
+        android:name="com.example.stepappv3.ui.pantry.PantryFragment"
+        android:label="Pantry"
+        tools:layout="@layout/fragment_pantry" />
+
+    <!-- SCAN -->
+    <fragment
+        android:id="@+id/navigation_scan"
+        android:name="com.example.stepappv3.ui.scan.ScanFragment"
+        android:label="Scan"
+        tools:layout="@layout/fragment_scan" />
+
+    <!-- HISTORY -->
+    <fragment
+        android:id="@+id/navigation_history"
+        android:name="com.example.stepappv3.ui.history.HistoryFragment"
+        android:label="History"
+        tools:layout="@layout/fragment_history" />
+
+    <!-- PROFILE -->
+    <fragment
+        android:id="@+id/navigation_profile"
+        android:name="com.example.stepappv3.ui.profile.ProfileFragment"
+        android:label="Profile"
+        tools:layout="@layout/fragment_profile" />
+
+</navigation>

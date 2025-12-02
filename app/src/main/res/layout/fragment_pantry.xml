@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ui.pantry.PantryFragment">
+
+    <!-- Title -->
+    <TextView
+        android:id="@+id/textPantryTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Pantry"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- Info text -->
+    <TextView
+        android:id="@+id/textPantrySubtitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Ingredients from recipes + your own items"
+        android:textSize="14sp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="4dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/textPantryTitle" />
+
+    <!-- Add button -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/buttonAddPantryItem"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Add item"
+        android:layout_marginEnd="16dp"
+        app:layout_constraintTop_toTopOf="@id/textPantryTitle"
+        app:layout_constraintBottom_toBottomOf="@id/textPantrySubtitle"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- RecyclerView to show pantry items -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerPantry"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:padding="8dp"
+        app:layout_constraintTop_toBottomOf="@id/textPantrySubtitle"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        tools:listitem="@layout/item_pantry" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

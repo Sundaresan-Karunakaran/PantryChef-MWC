@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">StepAppV3</string>
+    <string-array name="pantry_units_array">
+        <item>piece</item>
+        <item>g</item>
+        <item>ml</item>
+    </string-array>
+
+</resources>
