@@ -10,6 +10,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Get Total Steps"
+        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.464"
@@ -23,6 +24,7 @@
         android:layout_height="84dp"
         android:gravity="center"
         android:textSize="34sp"
+        android:visibility="gone"
         app:layout_constraintBottom_toTopOf="@+id/totalStepsButton"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.473"
@@ -80,6 +82,14 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Allergies: -" />
+
+            <!-- LOG OUT BUTTON -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/buttonLogout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:text="Log out" />
 
         </LinearLayout>
         <!-- END PROFILE INFO BLOCK -->

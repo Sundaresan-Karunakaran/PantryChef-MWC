@@ -1,6 +1,7 @@
 package com.example.stepappv3.ui.profile;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 
@@ -14,10 +15,11 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.example.stepappv3.LoginActivity;
 import com.example.stepappv3.R;
 import com.example.stepappv3.utils.Constants;
 
-public class ProfileFragment extends Fragment {
+public class ProfileFragment extends Fragment implements View.OnClickListener {
 
     // Profile info views
     private TextView tvAge;
@@ -36,6 +38,9 @@ public class ProfileFragment extends Fragment {
 
     private TextView totalStepsView;
     private Button totalStepsButton;
+
+    // Logout button
+    private Button buttonLogout;
 
     public ProfileFragment() {
         // Required empty public constructor
@@ -64,6 +69,9 @@ public class ProfileFragment extends Fragment {
         totalStepsView = root.findViewById(R.id.totalStepsView);
         totalStepsButton = root.findViewById(R.id.totalStepsButton);
 
+        // Logout button
+        buttonLogout = root.findViewById(R.id.buttonLogout);
+
         return root;
     }
 
@@ -74,35 +82,53 @@ public class ProfileFragment extends Fragment {
 
         loadProfileInfo();
 
-        // Şimdilik butonlar sadece placeholder olsun.
-        // Room bağlayınca buraya gerçek çağrıları ekleyeceğiz.
-        getStepsDayButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // TODO: Steps Today buraya bağlanacak (istersen şimdilik boş bırak)
-            }
-        });
+        // Set click listeners without lambdas or anonymous classes
+        getStepsDayButton.setOnClickListener(this);
+        getStepsWeekButton.setOnClickListener(this);
+        getStepsMonthButton.setOnClickListener(this);
+        totalStepsButton.setOnClickListener(this);
+        buttonLogout.setOnClickListener(this);
+    }
 
-        getStepsWeekButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // TODO: Steps This Week
-            }
-        });
+    @Override
+    public void onClick(View view) {
+        int id = view.getId();
 
-        getStepsMonthButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // TODO: Steps This Month
-            }
-        });
+        if (id == R.id.get_steps_day_button) {
+            // TODO: Steps Today will be implemented here
+        } else if (id == R.id.get_steps_hour_button) {
+            // TODO: Steps This Week
+        } else if (id == R.id.get_steps_minute_button) {
+            // TODO: Steps This Month
+        } else if (id == R.id.totalStepsButton) {
+            // TODO: Total steps
+        } else if (id == R.id.buttonLogout) {
+            logoutUser();
+        }
+    }
 
-        totalStepsButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // TODO: Total steps
-            }
-        });
+    private void logoutUser() {
+        // Clear user-related preferences and mark as logged out
+        Context context = requireActivity().getApplicationContext();
+        SharedPreferences prefs = context.getSharedPreferences(Constants.PREFS_NAME, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+
+        // Clear all stored profile/login data
+        editor.clear();
+
+        // Make sure login flags are false
+        editor.putBoolean(Constants.KEY_IS_LOGGED_IN, false);
+        editor.putBoolean(Constants.KEY_IS_PROFILE_DONE, false);
+
+        editor.apply();
+
+        // Go back to LoginActivity
+        Intent intent = new Intent(requireActivity(), LoginActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
+
+        // Finish current activity to prevent going back to profile with back button
+        requireActivity().finish();
     }
 
     private void loadProfileInfo() {
@@ -137,7 +163,7 @@ public class ProfileFragment extends Fragment {
         if (sb.length() == 0) {
             allergiesText = "None";
         } else {
-            allergiesText = sb.substring(0, sb.length() - 2); // sondaki ", " sil
+            allergiesText = sb.substring(0, sb.length() - 2); // remove last ", "
         }
 
         tvAllergies.setText("Allergies: " + allergiesText);
