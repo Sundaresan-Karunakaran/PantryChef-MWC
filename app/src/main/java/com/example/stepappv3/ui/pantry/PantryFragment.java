@@ -131,17 +131,21 @@ public class PantryFragment extends Fragment implements PantryAddOption.OnPantry
             }
         });
 
-        pantryViewModel.parsedReceiptText.observe(getViewLifecycleOwner(), text -> {
+        pantryViewModel.parsedReceiptText.observe(getViewLifecycleOwner(), event -> {
             // When we get a successful result, show it in a Material Alert Dialog.
-            new MaterialAlertDialogBuilder(requireContext())
-                    .setTitle("Scanned Items")
-                    .setMessage(text) // Display the text returned by Gemini
-                    .setPositiveButton("OK", null)
-                    .show();
+            String text = event.getContentIfNotHandled();
+            if( text != null && !text.isEmpty()) {
+                new MaterialAlertDialogBuilder(requireContext())
+                        .setTitle("Scanned Items")
+                        .setMessage(text) // Display the text returned by Gemini
+                        .setPositiveButton("OK", null)
+                        .show();
+            }
         });
 
-        pantryViewModel.errorMessage.observe(getViewLifecycleOwner(), error -> {
+        pantryViewModel.errorMessage.observe(getViewLifecycleOwner(), event -> {
             // If an error occurs, show it to the user in a Toast.
+            String error = event.getContentIfNotHandled();
             if (error != null && !error.isEmpty()) {
                 Toast.makeText(getContext(), error, Toast.LENGTH_LONG).show();
             }

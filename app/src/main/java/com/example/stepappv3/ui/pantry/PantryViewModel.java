@@ -10,6 +10,7 @@ import androidx.lifecycle.MutableLiveData;
 
 import com.example.stepappv3.R;
 import com.example.stepappv3.gemini.GeminiReceiptParser;
+import com.example.stepappv3.util.Event;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,11 +25,11 @@ public class PantryViewModel extends AndroidViewModel {
     private final MutableLiveData<Boolean> _isLoading = new MutableLiveData<>(false);
     public final LiveData<Boolean> isLoading = _isLoading;
 
-    private final MutableLiveData<String> _parsedReceiptText = new MutableLiveData<>();
-    public final LiveData<String> parsedReceiptText = _parsedReceiptText;
+    private final MutableLiveData<Event<String>> _parsedReceiptText = new MutableLiveData<>();
+    public final LiveData<Event<String>> parsedReceiptText = _parsedReceiptText;
 
-    private final MutableLiveData<String> _errorMessage = new MutableLiveData<>();
-    public final LiveData<String> errorMessage = _errorMessage;
+    private final MutableLiveData<Event<String>> _errorMessage = new MutableLiveData<>();
+    public final LiveData<Event<String>> errorMessage = _errorMessage;
     private GeminiReceiptParser geminiParser;
 
     // ADD A LAZY-INITIALIZER GETTER FOR THE PARSER
@@ -49,10 +50,10 @@ public class PantryViewModel extends AndroidViewModel {
 
             if (throwable != null) {
                 // An error occurred
-                _errorMessage.postValue("Error parsing receipt: " + throwable.getMessage());
+                _errorMessage.postValue(new Event<>("Error parsing receipt: " + throwable.getMessage()));
             } else {
                 // Success! Post the recognized text.
-                _parsedReceiptText.postValue(text);
+                _parsedReceiptText.postValue(new Event<>(text));
             }
         });
     }
