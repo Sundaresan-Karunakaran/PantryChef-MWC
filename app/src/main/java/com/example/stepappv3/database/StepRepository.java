@@ -4,13 +4,22 @@ import android.os.Looper;
 
 import androidx.lifecycle.LiveData;
 
+import com.example.stepappv3.database.steps.Step;
+import com.example.stepappv3.database.steps.StepDao;
+import com.example.stepappv3.database.pantry.PantryDao;
+import com.example.stepappv3.database.pantry.PantryItem;
+
+import java.util.List;
+
+
 public class StepRepository {
     private final StepDao stepDao;
-
+    private final PantryDao pantryDao;
 
     public StepRepository(Application application) {
         StepDatabase db = StepDatabase.getDatabase(application);
         stepDao = db.stepDao();
+        pantryDao = db.pantryDao();
     }
 
     public LiveData<Integer> getDailySteps(long sinceTimestamp){
@@ -50,4 +59,17 @@ public class StepRepository {
         });
     }
 
+    public void insertPantryItem(PantryItem item) {
+        StepDatabase.databaseWriteExecutor.execute(() -> {
+            pantryDao.insert(item);
+        });
+    }
+
+    public LiveData<List<PantryItem>> getItemsByCategory(String category) {
+        return pantryDao.getItemsByCategory(category);
+    }
+
+    public LiveData<List<PantryItem>> getAllPantryItems() {
+        return pantryDao.getAllItems();
+    }
 }

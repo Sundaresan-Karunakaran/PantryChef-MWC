@@ -16,5 +16,10 @@
         android:icon="@drawable/ic_notification"
         android:title="Notification" />
 
+    <item
+        android:id="@+id/navigation_pantry"
+        android:icon="@drawable/ic_fridge"
+        android:title="Pantry" />
+
 </menu>
     

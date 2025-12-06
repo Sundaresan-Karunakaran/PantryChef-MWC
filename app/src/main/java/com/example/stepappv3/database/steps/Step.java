@@ -1,4 +1,4 @@
-package com.example.stepappv3.database;
+package com.example.stepappv3.database.steps;
 
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;

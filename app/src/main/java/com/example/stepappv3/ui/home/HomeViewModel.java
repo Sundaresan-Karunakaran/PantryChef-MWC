@@ -7,7 +7,7 @@ import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Transformations;
-import com.example.stepappv3.database.Step;
+import com.example.stepappv3.database.steps.Step;
 import com.example.stepappv3.database.StepRepository;
 import java.util.Calendar;
 

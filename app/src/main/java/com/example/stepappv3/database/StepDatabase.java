@@ -1,16 +1,46 @@
 package com.example.stepappv3.database;
 
 import android.content.Context;
+
+import androidx.annotation.NonNull;
 import androidx.room.Database;
 import androidx.room.Room;
 import androidx.room.RoomDatabase;
+import androidx.room.migration.Migration;
+import androidx.sqlite.db.SupportSQLiteDatabase;
+
+import com.example.stepappv3.database.steps.Step;
+import com.example.stepappv3.database.steps.StepDao;
+import com.example.stepappv3.database.pantry.PantryDao;
+import com.example.stepappv3.database.pantry.PantryItem;
+
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-@Database(entities = {Step.class}, version = 1, exportSchema = false)
+@Database(entities = {Step.class,PantryItem.class}, version = 2, exportSchema = false)
 public abstract class StepDatabase extends RoomDatabase {
     public abstract StepDao stepDao();
+    public abstract PantryDao pantryDao();
+
+    static final Migration MIGRATION_1_2 = new Migration(1, 2) {
+        @Override
+        public void migrate(@NonNull SupportSQLiteDatabase database) {
+            // Since the 'daily_steps' table is unchanged, we only need to
+            // create the new 'pantry_items' table.
+            // This SQL must exactly match the table Room would generate.
+            database.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `pantry_items` (" +
+                            "`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                            "`name` TEXT, " +
+                            "`category` TEXT, " +
+                            "`quantity` INTEGER NOT NULL, " +
+                            "`unit` TEXT, " +
+                            "`expiryDate` INTEGER NOT NULL)"
+            );
+        }
+    };
+
 
     private static volatile StepDatabase instance;
     private static final int NUM_THREADS = 4;
@@ -23,6 +53,8 @@ public abstract class StepDatabase extends RoomDatabase {
                         context.getApplicationContext(),
                         StepDatabase.class,
                         "step_database")
+                        .fallbackToDestructiveMigration()
+                        .addMigrations(MIGRATION_1_2)
                         .build();
 
             }

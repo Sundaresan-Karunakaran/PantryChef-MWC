@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">StepAppV3</string>
+    <string name="category_image_desc">An image representing the pantry category.</string>
+
 </resources>
