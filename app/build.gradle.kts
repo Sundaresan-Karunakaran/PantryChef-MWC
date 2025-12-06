@@ -45,6 +45,8 @@ dependencies {
     implementation(libs.play.services.ads)
     implementation(libs.play.services.maps)
     implementation(libs.cardview)
+    implementation(libs.generativeai)
+    implementation(libs.guavaUtility)
     annotationProcessor(libs.room.compiler)
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)

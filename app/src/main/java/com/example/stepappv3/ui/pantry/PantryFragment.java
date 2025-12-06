@@ -1,37 +1,69 @@
 package com.example.stepappv3.ui.pantry;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
-
 import com.example.stepappv3.R;
-
 import java.util.ArrayList;
-import java.util.List;
-
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import android.widget.LinearLayout; // Import LinearLayout
+import android.widget.LinearLayout;
 import android.widget.Toast;
-import java.util.ArrayList;
-import java.util.List;
 
-public class PantryFragment extends Fragment {
+
+
+public class PantryFragment extends Fragment implements PantryAddOption.OnPantryOptionSelectedListener {
 
     private PantryViewModel pantryViewModel;
     private RecyclerView categoryRecyclerView;
     private PantryCategoryAdapter adapter;
     private LinearLayout emptyPantryView;
     private FloatingActionButton addPantryItemFab;
+    private ActivityResultLauncher<Void> takePictureLauncher;
+    private ActivityResultLauncher<String> requestCameraPermissionLauncher; // <-- ADD THIS LINE
 
+
+
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        // This sets up the contract for what to do AFTER the user takes a picture.
+        takePictureLauncher = registerForActivityResult(new ActivityResultContracts.TakePicturePreview(), bitmap -> {
+            if (bitmap != null) {
+                // Call Gemini from the viewModel to parse the image
+                pantryViewModel.parseReceiptImage(bitmap);
+            } else {
+                // The user cancelled or an error occurred.
+                Toast.makeText(getContext(), "No image captured.", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        // This sets up the contract for handling the CAMERA PERMISSION request result.
+        requestCameraPermissionLauncher = registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
+            if (isGranted) {
+                // Permission was just granted by the user. Now we can launch the camera.
+                takePictureLauncher.launch(null);
+            } else {
+                // The user denied the permission.
+                Toast.makeText(getContext(), "Camera permission denied. Cannot scan receipt.", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
 
     @Nullable
     @Override
@@ -90,12 +122,87 @@ public class PantryFragment extends Fragment {
                 adapter.updateData(categories);
             }
         });
+
+        pantryViewModel.isLoading.observe(getViewLifecycleOwner(), loading -> {
+            if (loading) {
+                // When the API call is in progress, show a simple message.
+                // In a more advanced UI, you would show a real ProgressBar.
+                Toast.makeText(getContext(), "Scanning receipt...", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        pantryViewModel.parsedReceiptText.observe(getViewLifecycleOwner(), text -> {
+            // When we get a successful result, show it in a Material Alert Dialog.
+            new MaterialAlertDialogBuilder(requireContext())
+                    .setTitle("Scanned Items")
+                    .setMessage(text) // Display the text returned by Gemini
+                    .setPositiveButton("OK", null)
+                    .show();
+        });
+
+        pantryViewModel.errorMessage.observe(getViewLifecycleOwner(), error -> {
+            // If an error occurs, show it to the user in a Toast.
+            if (error != null && !error.isEmpty()) {
+                Toast.makeText(getContext(), error, Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
+    public void onAddManuallySelected() {
+        // TODO: Navigate to the "Add Item Manually" screen
+        Toast.makeText(getContext(), "Add Manually Clicked!", Toast.LENGTH_SHORT).show();
+    }
+
+
+    public void onScanReceiptSelected() {
+        // TODO: Launch the camera to scan a receipt
+        showImageSourceOptions();
     }
 
     private void setupClickListeners() {
         addPantryItemFab.setOnClickListener(v -> {
-            // TODO: Navigate to a new screen to add a pantry item.
-            Toast.makeText(getContext(), "Add new item clicked!", Toast.LENGTH_SHORT).show();
+            // THE FIX: Launch our new bottom sheet
+            PantryAddOption bottomSheet = new PantryAddOption();
+            // We use getChildFragmentManager() because the bottom sheet is a child of this fragment
+            bottomSheet.show(getChildFragmentManager(), bottomSheet.getTag());
         });
+    }
+    private void launchCameraForReceipt() {
+        // Check if we already have the permission.
+        if (ContextCompat.checkSelfPermission( requireContext(),
+                Manifest.permission.CAMERA
+        ) == PackageManager.PERMISSION_GRANTED) {
+            // Permission is already granted, launch the camera directly.
+            takePictureLauncher.launch(null);
+        } else {
+            // Permission has not been granted yet. Launch the permission request.
+            // The result will be handled by the launcher we registered in onCreate().
+            requestCameraPermissionLauncher.launch(Manifest.permission.CAMERA);
+        }
+    }
+
+    private void showImageSourceOptions() {
+        // 1. Define the choices that will appear in the dialog.
+        final CharSequence[] options = {"Take a picture", "Choose from gallery"};
+
+        // 2. Create the Material-themed dialog builder.
+        new MaterialAlertDialogBuilder(requireContext())
+                .setTitle("Scan Receipt")
+                // 3. Set the items and the click listener for the items.
+                //    'setItems' creates a simple, tappable list.
+                .setItems(options, (dialog, which) -> {
+                    // The 'which' parameter tells you which item was clicked (0 for the first, 1 for the second).
+                    if (which == 0) {
+                        // "Take a picture" was clicked.
+                        launchCameraForReceipt();
+                    } else if (which == 1) {
+                        // "Choose from gallery" was clicked.
+                        // TODO: In a future step, we will implement the gallery launcher here.
+                        Toast.makeText(getContext(), "Choose from gallery clicked!", Toast.LENGTH_SHORT).show();
+                    }
+                })
+
+                // 4. Create and show the dialog.
+                .show();
     }
 }
