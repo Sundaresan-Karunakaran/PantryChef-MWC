@@ -1,9 +1,13 @@
 package com.example.stepappv3.database.pantry;
 
 import androidx.room.Entity;
+import androidx.room.Ignore;
+import androidx.room.Index;
 import androidx.room.PrimaryKey;
 
-@Entity(tableName = "pantry_items")
+import org.jspecify.annotations.NonNull;
+
+@Entity(tableName = "pantry_items",indices = {@Index(value = "userId")})
 public class PantryItem {
 
     @PrimaryKey(autoGenerate = true)
@@ -13,13 +17,23 @@ public class PantryItem {
     public String category; // e.g., "Dairy & Eggs", "Produce"
     public int quantity;
     public String unit; // e.g., "pcs", "grams", "liters"
-// Store as a long (milliseconds since epoch)
+    @NonNull
+    public String userId;
 
     // Room needs a public constructor
-    public PantryItem(String name, String category, int quantity, String unit) {
+    public PantryItem(String name, String category, int quantity, String unit, @NonNull String userId) {
         this.name = name;
         this.category = category;
         this.quantity = quantity;
         this.unit = unit;
+        this.userId = userId;
+
+
+    }
+
+
+    @Ignore
+    public PantryItem(){
+
     }
 }

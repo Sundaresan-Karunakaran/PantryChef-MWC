@@ -41,6 +41,21 @@ public abstract class StepDatabase extends RoomDatabase {
         }
     };
 
+    static final Migration MIGRATION_2_3 = new Migration(2, 3) {
+        @Override
+        public void migrate(@NonNull SupportSQLiteDatabase database) {
+            // Add the 'userId' column to the 'daily_steps' table.
+            // We provide a default value ('') for existing rows.
+            database.execSQL(
+                    "ALTER TABLE daily_steps ADD COLUMN userId TEXT NOT NULL DEFAULT ''"
+            );
+            // Add the 'userId' column to the 'pantry_items' table.
+            database.execSQL(
+                    "ALTER TABLE pantry_items ADD COLUMN userId TEXT NOT NULL DEFAULT ''"
+            );
+        }
+    };
+
 
     private static volatile StepDatabase instance;
     private static final int NUM_THREADS = 4;
@@ -54,7 +69,7 @@ public abstract class StepDatabase extends RoomDatabase {
                         StepDatabase.class,
                         "step_database")
                         .fallbackToDestructiveMigration()
-                        .addMigrations(MIGRATION_1_2)
+                        .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
                         .build();
 
             }

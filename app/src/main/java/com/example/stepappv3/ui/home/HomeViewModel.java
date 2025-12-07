@@ -10,6 +10,7 @@ import androidx.lifecycle.Transformations;
 import com.example.stepappv3.database.steps.Step;
 import com.example.stepappv3.database.StepRepository;
 import java.util.Calendar;
+import androidx.lifecycle.SavedStateHandle;
 
 public class HomeViewModel extends AndroidViewModel {
     // For the counting state
@@ -22,6 +23,7 @@ public class HomeViewModel extends AndroidViewModel {
     private static final int DAILY_STEP_GOAL = 100;
     private StepRepository repo;
     public LiveData<Integer> progressPercentage ;
+    private final String userId;
     private StepRepository getRepo(){
         if (repo == null){
             repo = new StepRepository(getApplication());
@@ -29,7 +31,7 @@ public class HomeViewModel extends AndroidViewModel {
         return repo;
     }
 
-    public HomeViewModel(@NonNull Application application){
+    public HomeViewModel(@NonNull Application application, @NonNull SavedStateHandle savedStateHandle){
         super(application);
 
         Calendar calendar = Calendar.getInstance();
@@ -37,9 +39,10 @@ public class HomeViewModel extends AndroidViewModel {
         calendar.set(Calendar.MINUTE, 0);
         calendar.set(Calendar.SECOND, 0);
         long startOfTodayTimestamp = calendar.getTimeInMillis();
+        this.userId = savedStateHandle.get("userId");
 
         // 2. Get the reactive stream for steps today from the repository.
-        LiveData<Integer> rawStepsToday = getRepo().getDailySteps(startOfTodayTimestamp);
+        LiveData<Integer> rawStepsToday = getRepo().getDailyStepsUser(startOfTodayTimestamp,this.userId);
 
         // 3. Transform it for the UI, handling the null case.
         steps = Transformations.map(rawStepsToday, total -> total == null ? 0 : total);
@@ -61,14 +64,14 @@ public class HomeViewModel extends AndroidViewModel {
     public void onResetClicked() {
         _steps.setValue(0);
         _isCounting.setValue(false);
-        getRepo().deleteAll();
+        getRepo().deleteAllUser(this.userId);
 
     }
 
 
     public void onCountClicked() {
         if (Boolean.TRUE.equals(_isCounting.getValue())) {
-            Step newStep = new Step(System.currentTimeMillis(), 1);
+            Step newStep = new Step(System.currentTimeMillis(), 1,this.userId);
             getRepo().insert(newStep);
         }
     }

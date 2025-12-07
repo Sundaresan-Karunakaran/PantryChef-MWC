@@ -3,13 +3,33 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/mobile_navigation"
-    app:startDestination="@id/navigation_home">  <!-- THIS IS THE KEY -->
+    app:startDestination="@id/loginFragment">  <!-- THIS IS THE KEY -->
+
+    <fragment
+        android:id="@+id/loginFragment"
+        android:name="com.example.stepappv3.login.LoginFragment"
+        android:label="Login"
+        tools:layout="@layout/fragment_login">
+
+        <!-- STEP 4: Define the action (the "track") from Login to Home -->
+        <action
+            android:id="@+id/action_loginFragment_to_homeFragment"
+            app:destination="@id/navigation_home"
+            app:popUpTo="@id/loginFragment"
+            app:popUpToInclusive="true" />
+    </fragment>
 
     <fragment
         android:id="@+id/navigation_home"
         android:name="com.example.stepappv3.ui.home.HomeFragment"
         android:label="Home"
-        tools:layout="@layout/fragment_home" />
+        tools:layout="@layout/fragment_home">
+
+        <!-- STEP 3: Define the argument (the "pass") that Home now requires -->
+        <argument
+            android:name="userId"
+            app:argType="string" />
+    </fragment>
     <fragment
         android:id="@+id/navigation_profile"
         android:name="com.example.stepappv3.ui.profile.ProfileFragment"

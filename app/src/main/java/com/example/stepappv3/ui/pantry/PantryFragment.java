@@ -131,15 +131,12 @@ public class PantryFragment extends Fragment implements PantryAddOption.OnPantry
             }
         });
 
-        pantryViewModel.parsedReceiptText.observe(getViewLifecycleOwner(), event -> {
-            // When we get a successful result, show it in a Material Alert Dialog.
-            String text = event.getContentIfNotHandled();
-            if( text != null && !text.isEmpty()) {
-                new MaterialAlertDialogBuilder(requireContext())
-                        .setTitle("Scanned Items")
-                        .setMessage(text) // Display the text returned by Gemini
-                        .setPositiveButton("OK", null)
-                        .show();
+        pantryViewModel.itemsAddedEvent.observe(getViewLifecycleOwner(), event -> {
+            Integer itemsAddedCount = event.getContentIfNotHandled(); // Consume the event
+            if (itemsAddedCount != null && itemsAddedCount > 0) {
+                // Show a professional success message to the user!
+                Toast.makeText(getContext(), itemsAddedCount + " items added to your pantry!", Toast.LENGTH_LONG).show();
+                // In a real app, you might refresh the pantry list here.
             }
         });
 
@@ -152,9 +149,14 @@ public class PantryFragment extends Fragment implements PantryAddOption.OnPantry
         });
     }
 
+    // In PantryFragment.java
+
+    @Override
     public void onAddManuallySelected() {
-        // TODO: Navigate to the "Add Item Manually" screen
-        Toast.makeText(getContext(), "Add Manually Clicked!", Toast.LENGTH_SHORT).show();
+        // Instead of a toast, we now launch our new dialog fragment.
+        PantryAddItemManualFragment dialogFragment = new PantryAddItemManualFragment();
+        // We use getChildFragmentManager() because this dialog is a child of the PantryFragment.
+        dialogFragment.show(getChildFragmentManager(), "AddPantryItemDialog");
     }
 
 

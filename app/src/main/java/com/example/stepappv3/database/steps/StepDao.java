@@ -13,22 +13,22 @@ public interface StepDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insert(Step step);
 
-    @Query("DELETE FROM daily_steps")
-    void deleteAll();
+    @Query("DELETE FROM daily_steps WHERE userId = :userId")
+    void deleteAllUser(String userId);
 
-    @Query("SELECT * from daily_steps ORDER BY timestamp DESC LIMIT 1")
-    LiveData<Step> getDailyStep();
+    @Query("SELECT * from daily_steps WHERE userId = :userId ORDER BY timestamp DESC LIMIT 1")
+    LiveData<Step> getDailyStepUser(String userId);
 
-    @Query("SELECT SUM(steps) FROM daily_steps")
-    LiveData<Integer> getTotalSteps();
+    @Query("SELECT SUM(steps) FROM daily_steps WHERE userId = :userId")
+    LiveData<Integer> getTotalStepsUser(String userId);
 
-    @Query("SELECT IFNULL(SUM(steps),0) FROM daily_steps")
-    int getTotalStepsAsync();
+    @Query("SELECT IFNULL(SUM(steps),0) FROM daily_steps WHERE userId = :userId")
+    int getTotalStepsAsyncUser(String userId);
 
-    @Query("SELECT SUM(steps) FROM daily_steps WHERE timestamp >= :sinceTimestamp")
-    int getStepsSince(long sinceTimestamp);
+    @Query("SELECT SUM(steps) FROM daily_steps WHERE timestamp >= :sinceTimestamp AND userId = :userId")
+    int getStepsSinceUser(long sinceTimestamp,String userId);
 
-    @Query("SELECT SUM(steps) FROM daily_steps WHERE timestamp >= :sinceTimestamp")
-    LiveData<Integer> getStepsSinceLiveData(long sinceTimestamp);
+    @Query("SELECT SUM(steps) FROM daily_steps WHERE timestamp >= :sinceTimestamp AND userId = :userId")
+    LiveData<Integer> getStepsSinceLiveDataUser(long sinceTimestamp,String userId);
 
 }

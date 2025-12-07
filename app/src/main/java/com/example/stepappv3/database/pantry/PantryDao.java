@@ -15,15 +15,15 @@ public interface PantryDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insert(PantryItem pantryItem);
 
-    @Update
-    void update(PantryItem pantryItem);
+    @Query("UPDATE pantry_items SET name = :name , category = :category,quantity = :quantity, unit = :unit WHERE id = :id AND userId = :userId")
+    void updateForUser(int id, String userId, String name, String category, int quantity, String unit);
 
-    @Query("DELETE FROM pantry_items WHERE id = :itemId")
-    void deleteById(int itemId);
+    @Query("DELETE FROM pantry_items WHERE id = :itemId AND userId = :userId")
+    void deleteByIdUser(int itemId,String userId);
 
-    @Query("SELECT * FROM pantry_items ORDER BY quantity ASC")
-    LiveData<List<PantryItem>> getAllItems();
+    @Query("SELECT * FROM pantry_items WHERE userId = :userId ORDER BY quantity ASC")
+    LiveData<List<PantryItem>> getAllItemsUser(String userId);
 
-    @Query("SELECT * FROM pantry_items WHERE category = :categoryName ORDER BY quantity ASC")
-    LiveData<List<PantryItem>> getItemsByCategory(String categoryName);
+    @Query("SELECT * FROM pantry_items WHERE category = :categoryName AND userId = :userId ORDER BY quantity ASC")
+    LiveData<List<PantryItem>> getItemsByCategoryUser(String categoryName,String userId);
 }

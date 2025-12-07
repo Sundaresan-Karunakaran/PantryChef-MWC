@@ -2,6 +2,9 @@ package com.example.stepappv3.ui.profile;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -28,6 +31,9 @@ public class ProfileFragment extends androidx.fragment.app.Fragment {
     private MaterialButton getStepsHourButton;
     private MaterialButton getStepsMinuteButton;
 
+    MaterialButton logoutButton;
+
+
 
 
     @Nullable
@@ -39,6 +45,7 @@ public class ProfileFragment extends androidx.fragment.app.Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
         totalSteps = view.findViewById(R.id.totalStepsView);
         stepsTaken = view.findViewById(R.id.totalStepsButton);
         stepsTodayView = view.findViewById(R.id.steps_day_textview);
@@ -49,6 +56,8 @@ public class ProfileFragment extends androidx.fragment.app.Fragment {
         getStepsMinuteButton = view.findViewById(R.id.get_steps_minute_button);
 
         ProfileViewModel profile = new ViewModelProvider(this).get(ProfileViewModel.class);
+
+        logoutButton = view.findViewById(R.id.logout_button);
 
 
         totalSteps.setText("");
@@ -95,7 +104,16 @@ public class ProfileFragment extends androidx.fragment.app.Fragment {
             });
         });
 
+        logoutButton.setOnClickListener(v -> {
+            // The button's only job is to command the ViewModel to log out.
+            if (profile != null) {
+                profile.logout();
+            }
+        });
+
     }
+
+
 
 
 }

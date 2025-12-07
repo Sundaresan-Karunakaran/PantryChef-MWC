@@ -16,3 +16,9 @@
 
 1. Uses gemini api key to parse image to gemini and get back list of items
  
+
+
+### Profile 
+
+1. Added login functionality to the app using FireBase
+2. For the app to work you need to setup a firebase project and have a google-services.json and build the app

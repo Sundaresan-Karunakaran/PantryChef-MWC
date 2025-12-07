@@ -22,15 +22,15 @@ public class StepRepository {
         pantryDao = db.pantryDao();
     }
 
-    public LiveData<Integer> getDailySteps(long sinceTimestamp){
-        return stepDao.getStepsSinceLiveData(sinceTimestamp);
+    public LiveData<Integer> getDailyStepsUser(long sinceTimestamp,String userId){
+        return stepDao.getStepsSinceLiveDataUser(sinceTimestamp,userId);
     }
 
 
-    public void getStepsSince(long sinceTimestamp, final OnDataFetchedCallback callback) {
+    public void getStepsSinceUser(long sinceTimestamp,String userId, final OnDataFetchedCallback callback) {
         StepDatabase.databaseWriteExecutor.execute(() -> {
             // This runs on a background thread.
-            final int total = stepDao.getStepsSince(sinceTimestamp);
+            final int total = stepDao.getStepsSinceUser(sinceTimestamp,userId);
 
             // To update the UI, we must post back to the main thread.
             new android.os.Handler(Looper.getMainLooper()).post(() -> {
@@ -39,9 +39,9 @@ public class StepRepository {
             });
         });
     }
-    public void getTotalStepsAsync(final OnDataFetchedCallback callback){
+    public void getTotalStepsAsyncUser(String userId,final OnDataFetchedCallback callback){
         StepDatabase.databaseWriteExecutor.execute(() -> {
-            final int total = stepDao.getTotalStepsAsync();
+            final int total = stepDao.getTotalStepsAsyncUser(userId);
             new android.os.Handler(Looper.getMainLooper()).post(() -> {
                 callback.onDataFetched(total);
             });
@@ -53,9 +53,9 @@ public class StepRepository {
         });
     }
 
-    public void deleteAll(){
+    public void deleteAllUser(String userId){
         StepDatabase.databaseWriteExecutor.execute(() -> {
-            stepDao.deleteAll();
+            stepDao.deleteAllUser(userId);
         });
     }
 
@@ -65,11 +65,11 @@ public class StepRepository {
         });
     }
 
-    public LiveData<List<PantryItem>> getItemsByCategory(String category) {
-        return pantryDao.getItemsByCategory(category);
+    public LiveData<List<PantryItem>> getItemsByCategoryUser(String category,String userId) {
+        return pantryDao.getItemsByCategoryUser(category,userId);
     }
 
-    public LiveData<List<PantryItem>> getAllPantryItems() {
-        return pantryDao.getAllItems();
+    public LiveData<List<PantryItem>> getAllPantryItemsUser(String userId) {
+        return pantryDao.getAllItemsUser(userId);
     }
 }

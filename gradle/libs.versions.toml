@@ -16,6 +16,7 @@ cardview = "1.0.0"
 generativeai = "0.9.0"
 firebaseCrashlyticsBuildtools = "3.0.6"
 guavaUtility = "33.5.0-android"
+fireBase  = '4.4.4'
 
 [libraries]
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -35,6 +36,7 @@ play-services-maps = { group = "com.google.android.gms", name = "play-services-m
 cardview = { group = "androidx.cardview", name = "cardview", version.ref = "cardview" }
 generativeai = { group = "com.google.ai.client.generativeai", name = "generativeai", version.ref = "generativeai" }
 guavaUtility = { group = "com.google.guava", name = "guava", version.ref = "guavaUtility" }
+fireBase = {group = "com.google.gms.google-services",name = "firebase", version.ref = "fireBase"}
 
 
 

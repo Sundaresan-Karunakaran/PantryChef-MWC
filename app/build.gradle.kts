@@ -1,5 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
+    id("com.google.gms.google-services")
+    id("androidx.navigation.safeargs")
 }
 
 android {
@@ -47,6 +49,9 @@ dependencies {
     implementation(libs.cardview)
     implementation(libs.generativeai)
     implementation(libs.guavaUtility)
+    implementation(platform("com.google.firebase:firebase-bom:34.6.0"))
+    implementation("com.google.firebase:firebase-analytics")
+    implementation("com.firebaseui:firebase-ui-auth:8.0.2")
     annotationProcessor(libs.room.compiler)
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
