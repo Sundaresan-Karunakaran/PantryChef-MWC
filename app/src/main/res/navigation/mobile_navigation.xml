@@ -15,6 +15,11 @@
             app:destination="@id/navigation_home"
             app:popUpTo="@id/loginFragment"
             app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/action_loginFragment_to_onboardingInfoFragment"
+            app:destination="@id/onboardingInfoFragment"
+            app:popUpTo="@id/loginFragment"
+            app:popUpToInclusive="true" />
     </fragment>
 
     <fragment
@@ -28,10 +33,58 @@
     </fragment>
 
     <fragment
+        android:id="@+id/onboardingInfoFragment"
+        android:name="com.example.stepappv3.ui.onboarding.OnboardingInfoFragment"
+        android:label="Info"
+        tools:layout="@layout/fragment_onboarding_info">
+        <action
+            android:id="@+id/action_info_to_allergies"
+            app:destination="@id/onboardingAllergiesFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/onboardingAllergiesFragment"
+        android:name="com.example.stepappv3.ui.onboarding.OnboardingAllergiesFragment"
+        android:label="Allergies"
+        tools:layout="@layout/fragment_onboarding_allergies">
+        <action
+            android:id="@+id/action_allergies_to_diet"
+            app:destination="@id/onboardingDietFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/onboardingDietFragment"
+        android:name="com.example.stepappv3.ui.onboarding.OnboardingDietFragment"
+        android:label="Diet"
+        tools:layout="@layout/fragment_onboarding_diet">
+        <action
+            android:id="@+id/action_diet_to_goal"
+            app:destination="@id/onboardingGoalFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/onboardingGoalFragment"
+        android:name="com.example.stepappv3.ui.onboarding.OnboardingGoalFragment"
+        android:label="Goal"
+        tools:layout="@layout/fragment_onboarding_goal">
+        <action
+            android:id="@+id/action_goal_to_home"
+            app:destination="@id/navigation_home"
+            app:popUpTo="@id/loginFragment"
+            app:popUpToInclusive="false" />
+    </fragment>
+
+    <fragment
         android:id="@+id/navigation_step"
         android:name="com.example.stepappv3.ui.step.StepFragment"
         android:label="Step"
         tools:layout="@layout/fragment_step" />
+
+    <fragment
+        android:id="@+id/navigation_pantry"
+        android:name="com.example.stepappv3.ui.pantry.PantryFragment"
+        android:label="Pantry"
+        tools:layout="@layout/fragment_pantry" />
 
     <fragment
         android:id="@+id/navigation_profile"
@@ -40,9 +93,9 @@
         tools:layout="@layout/fragment_profile" />
 
     <fragment
-        android:id="@+id/navigation_pantry"
-        android:name="com.example.stepappv3.ui.pantry.PantryFragment"
-        android:label="Pantry"
-        tools:layout="@layout/fragment_pantry" />
+        android:id="@+id/nav_settings_page"
+        android:name="com.example.stepappv3.ui.settings.SettingsFragment"
+        android:label="Settings"
+        tools:layout="@layout/fragment_settings" />
 
 </navigation>
