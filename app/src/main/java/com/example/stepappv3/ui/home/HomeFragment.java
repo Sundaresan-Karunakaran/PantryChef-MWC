@@ -1,142 +1,133 @@
 package com.example.stepappv3.ui.home;
 
-import android.content.pm.PackageManager;
-import android.os.Build;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.LayoutInflater;
-import android.view.ViewGroup;
 import android.view.View;
-import android.widget.TextView;
-import android.widget.Toast;
-
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
+import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.content.ContextCompat;
+import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.example.stepappv3.R;
-import com.example.stepappv3.sensors.StepDetector;
-import com.google.android.material.button.MaterialButton;
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-import com.google.android.material.progressindicator.CircularProgressIndicator;
+import com.github.mikephil.charting.charts.BarChart;
+import com.github.mikephil.charting.charts.PieChart;
+import com.github.mikephil.charting.components.XAxis;
+import com.github.mikephil.charting.data.BarData;
+import com.github.mikephil.charting.data.BarDataSet;
+import com.github.mikephil.charting.data.BarEntry;
+import com.github.mikephil.charting.data.PieData;
+import com.github.mikephil.charting.data.PieDataSet;
+import com.github.mikephil.charting.data.PieEntry;
+import com.github.mikephil.charting.utils.ColorTemplate;
+import com.google.android.material.button.MaterialButtonToggleGroup;
 
-public class HomeFragment extends androidx.fragment.app.Fragment {
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
-    private TextView stepsDisplay;
-    private MaterialButton startButton;
-    private MaterialButton resetButton;
-    private StepDetector stepDetector;
-    private HomeViewModel home;
-    private CircularProgressIndicator stepsProgress;
-    private ActivityResultLauncher<String> requestPermissionLauncher;
+public class HomeFragment extends Fragment {
 
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setupPermissions();
-    }
+    private HomeViewModel homeViewModel;
+    private BarChart barChartSteps;
+    private PieChart pieChartPantry;
+    private MaterialButtonToggleGroup toggleGroupTime;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_home,container,false);
+        return inflater.inflate(R.layout.fragment_home, container, false);
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        stepsDisplay = view.findViewById(R.id.steps);
-        startButton = view.findViewById(R.id.start);
-        resetButton = view.findViewById(R.id.reset);
-        stepDetector = new StepDetector(requireContext());
-        stepsProgress = view.findViewById(R.id.progressBar);
-        home = new ViewModelProvider(this).get(HomeViewModel.class);
 
+        homeViewModel = new ViewModelProvider(this).get(HomeViewModel.class);
+
+        barChartSteps = view.findViewById(R.id.barChartSteps);
+        pieChartPantry = view.findViewById(R.id.pieChartPantry);
+        toggleGroupTime = view.findViewById(R.id.toggleGroupTime);
+
+        setupCharts();
+        setupToggle();
         setupObservers();
-        setupClickListeners();
-
     }
 
-    private void setupPermissions() {
-        requestPermissionLauncher = registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
-            if (isGranted) {
-                // The user just granted the permission. Now we can proceed with the action.
-                home.onStartStopClicked();
-            } else {
-                // The user denied the permission. It's good practice to explain
-                // why the feature is unavailable.
-                Toast.makeText(getContext(), "Permission denied. Step counting cannot start.", Toast.LENGTH_SHORT).show();
+    private void setupCharts() {
+        // Bar Chart Ayarları
+        barChartSteps.getDescription().setEnabled(false);
+        barChartSteps.setDrawGridBackground(false);
+        barChartSteps.getXAxis().setPosition(XAxis.XAxisPosition.BOTTOM);
+        barChartSteps.getXAxis().setGranularity(1f);
+        barChartSteps.getAxisRight().setEnabled(false); // Sağ ekseni kapat
+
+        // Pie Chart Ayarları
+        pieChartPantry.getDescription().setEnabled(false);
+        pieChartPantry.setCenterText("Pantry\nItems");
+        pieChartPantry.setCenterTextSize(14f);
+        pieChartPantry.setHoleRadius(40f);
+        pieChartPantry.setTransparentCircleRadius(45f);
+        pieChartPantry.getLegend().setEnabled(false); // Efsaneyi kapat, dilimlerin üzerine yazacağız
+    }
+
+    private void setupToggle() {
+        // Varsayılan seçim
+        toggleGroupTime.check(R.id.btnDay);
+
+        toggleGroupTime.addOnButtonCheckedListener((group, checkedId, isChecked) -> {
+            if (isChecked) {
+                if (checkedId == R.id.btnDay) {
+                    homeViewModel.setFilter(HomeViewModel.FilterType.DAILY);
+                } else if (checkedId == R.id.btnWeek) {
+                    homeViewModel.setFilter(HomeViewModel.FilterType.WEEKLY);
+                } else if (checkedId == R.id.btnMonth) {
+                    homeViewModel.setFilter(HomeViewModel.FilterType.MONTHLY);
+                }
             }
         });
     }
 
     private void setupObservers() {
-        home.isCounting.observe(getViewLifecycleOwner(), counting -> {
-            if (counting) {
-                startButton.setText("Stop");
-                startButton.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.button_stop_red));
-                stepDetector.start();
-            } else {
-                startButton.setText("Start");
-                startButton.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.button_start_green));
-                stepDetector.stop();
+        // Adım Grafiği Güncelleme
+        homeViewModel.stepsGraphData.observe(getViewLifecycleOwner(), entries -> {
+            if (entries != null) {
+                BarDataSet set = new BarDataSet(entries, "Steps");
+                set.setColors(ColorTemplate.MATERIAL_COLORS);
+                set.setValueTextSize(10f);
+
+                BarData data = new BarData(set);
+                data.setBarWidth(0.9f); // Çubuk genişliği
+
+                barChartSteps.setData(data);
+                barChartSteps.animateY(1000);
+                barChartSteps.invalidate(); // Grafiği yenile
             }
         });
 
-        home.steps.observe(getViewLifecycleOwner(), stepCount -> {
-            stepsDisplay.setText(String.valueOf(stepCount));
-        });
+        // Kiler Pasta Grafiği Güncelleme
+        homeViewModel.pantryPieData.observe(getViewLifecycleOwner(), categoryCounts -> {
+            List<PieEntry> pieEntries = new ArrayList<>();
 
-        home.progressPercentage.observe(getViewLifecycleOwner(), progress -> {
-            stepsProgress.setProgress(progress, true);
-        });
-
-        stepDetector.setOnStepDetectedListener(() -> {
-            home.onCountClicked();
-        });
-    }
-
-    private void setupClickListeners() {
-        resetButton.setOnClickListener(v -> showResetConfirmationDialog());
-
-        startButton.setOnClickListener(v -> {
-            // First, check if we are on Android 10 (Q) or higher.
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-
-                // Check if we already have the permission.
-                if (ContextCompat.checkSelfPermission(
-                        requireContext(),
-                        android.Manifest.permission.ACTIVITY_RECOGNITION
-                ) == PackageManager.PERMISSION_GRANTED) {
-                    // Permission is already granted, proceed with the original action.
-                    home.onStartStopClicked();
-                } else {
-                    // Permission has not been granted yet. Launch the request.
-                    // The result will be handled by the launcher we registered in onCreate().
-                    requestPermissionLauncher.launch(android.Manifest.permission.ACTIVITY_RECOGNITION);
+            // Map'ten veriyi PieEntry'e çevir
+            for (Map.Entry<String, Integer> entry : categoryCounts.entrySet()) {
+                // Sadece 0'dan büyük olanları ekle
+                if (entry.getValue() > 0) {
+                    pieEntries.add(new PieEntry(entry.getValue(), entry.getKey()));
                 }
-
-            } else {
-                // We are on a device older than Android 10.
-                // The permission is granted at install time if it's in the manifest.
-                // We can proceed directly with the action.
-                home.onStartStopClicked();
             }
+
+            PieDataSet dataSet = new PieDataSet(pieEntries, "Categories");
+            dataSet.setColors(ColorTemplate.JOYFUL_COLORS); // Renkli bir palet
+            dataSet.setSliceSpace(2f);
+            dataSet.setValueTextSize(12f);
+            dataSet.setValueTextColor(Color.WHITE);
+
+            PieData data = new PieData(dataSet);
+            pieChartPantry.setData(data);
+            pieChartPantry.animateXY(1000, 1000);
+            pieChartPantry.invalidate();
         });
-
-    }
-
-
-    private void showResetConfirmationDialog() {
-        new MaterialAlertDialogBuilder(requireContext())
-                .setTitle("Reset Counter?")
-                .setMessage("This will permanently delete all step history. Are you sure?")
-                .setNegativeButton("Cancel", null)
-                .setPositiveButton("Delete", (dialog, which) -> {
-                    home.onResetClicked();
-                })
-                .show();
     }
 }

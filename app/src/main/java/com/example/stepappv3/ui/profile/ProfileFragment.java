@@ -2,9 +2,6 @@ package com.example.stepappv3.ui.profile;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -12,7 +9,6 @@ import android.widget.TextView;
 import com.example.stepappv3.R;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.example.stepappv3.database.OnDataFetchedCallback;
@@ -26,15 +22,11 @@ public class ProfileFragment extends androidx.fragment.app.Fragment {
     private TextView stepsHourView;
     private TextView stepsMinuteView;
 
-    // We get the buttons but won't use them yet, as LiveData handles updates.
     private MaterialButton getStepsDayButton;
     private MaterialButton getStepsHourButton;
     private MaterialButton getStepsMinuteButton;
 
     MaterialButton logoutButton;
-
-
-
 
     @Nullable
     @Override
@@ -54,17 +46,17 @@ public class ProfileFragment extends androidx.fragment.app.Fragment {
         getStepsDayButton = view.findViewById(R.id.get_steps_day_button);
         getStepsHourButton = view.findViewById(R.id.get_steps_hour_button);
         getStepsMinuteButton = view.findViewById(R.id.get_steps_minute_button);
+        logoutButton = view.findViewById(R.id.logout_button);
 
         ProfileViewModel profile = new ViewModelProvider(this).get(ProfileViewModel.class);
 
-        logoutButton = view.findViewById(R.id.logout_button);
-
-
         totalSteps.setText("");
+
+        // DÜZELTME 1: <Integer> eklendi ve parametre Integer yapıldı
         stepsTaken.setOnClickListener(v -> {
-            profile.getTotalSteps(new OnDataFetchedCallback(){
+            profile.getTotalSteps(new OnDataFetchedCallback<Integer>(){
                 @Override
-                public void onDataFetched(int total){
+                public void onDataFetched(Integer total){
                     totalSteps.setText(String.valueOf(total));
                 }
             });
@@ -74,46 +66,40 @@ public class ProfileFragment extends androidx.fragment.app.Fragment {
         stepsHourView.setText("");
         stepsMinuteView.setText("");
 
-        // 3. Set up click listener for the "Day" button
+        // DÜZELTME 2: <Integer> eklendi
         getStepsDayButton.setOnClickListener(v -> {
-            profile.fetchStepsToday(new OnDataFetchedCallback() {
+            profile.fetchStepsToday(new OnDataFetchedCallback<Integer>() {
                 @Override
-                public void onDataFetched(int total) {
+                public void onDataFetched(Integer total) {
                     stepsTodayView.setText(String.valueOf(total));
                 }
             });
         });
 
-        // 4. Set up click listener for the "Hour" button
+        // DÜZELTME 3: <Integer> eklendi
         getStepsHourButton.setOnClickListener(v -> {
-            profile.fetchStepsThisHour(new OnDataFetchedCallback() {
+            profile.fetchStepsThisHour(new OnDataFetchedCallback<Integer>() {
                 @Override
-                public void onDataFetched(int total) {
+                public void onDataFetched(Integer total) {
                     stepsHourView.setText(String.valueOf(total));
                 }
             });
         });
 
-        // 5. Set up click listener for the "Minute" button
+        // DÜZELTME 4: <Integer> eklendi
         getStepsMinuteButton.setOnClickListener(v -> {
-            profile.fetchStepsThisMinute(new OnDataFetchedCallback() {
+            profile.fetchStepsThisMinute(new OnDataFetchedCallback<Integer>() {
                 @Override
-                public void onDataFetched(int total) {
+                public void onDataFetched(Integer total) {
                     stepsMinuteView.setText(String.valueOf(total));
                 }
             });
         });
 
         logoutButton.setOnClickListener(v -> {
-            // The button's only job is to command the ViewModel to log out.
             if (profile != null) {
                 profile.logout();
             }
         });
-
     }
-
-
-
-
 }

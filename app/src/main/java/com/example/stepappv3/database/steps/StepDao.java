@@ -5,7 +5,7 @@ import androidx.room.Dao;
 import androidx.room.Insert;
 import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
-
+import java.util.List; // BU IMPORT EKLENDİ
 
 @Dao
 public interface StepDao {
@@ -26,9 +26,12 @@ public interface StepDao {
     int getTotalStepsAsyncUser(String userId);
 
     @Query("SELECT SUM(steps) FROM daily_steps WHERE timestamp >= :sinceTimestamp AND userId = :userId")
-    int getStepsSinceUser(long sinceTimestamp,String userId);
+    int getStepsSinceUser(long sinceTimestamp, String userId);
 
     @Query("SELECT SUM(steps) FROM daily_steps WHERE timestamp >= :sinceTimestamp AND userId = :userId")
-    LiveData<Integer> getStepsSinceLiveDataUser(long sinceTimestamp,String userId);
+    LiveData<Integer> getStepsSinceLiveDataUser(long sinceTimestamp, String userId);
 
+    // Yeni eklenen metot
+    @Query("SELECT * FROM daily_steps WHERE timestamp BETWEEN :startTime AND :endTime AND userId = :userId ORDER BY timestamp ASC")
+    List<Step> getStepsInRangeUser(long startTime, long endTime, String userId);
 }
