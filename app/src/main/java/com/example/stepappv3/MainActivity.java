@@ -68,6 +68,12 @@ public class MainActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+        android.view.Menu menu = navView.getMenu();
+        android.view.MenuItem pantryItem = menu.findItem(R.id.navigation_pantry);
+
+        android.text.SpannableString spanString = new android.text.SpannableString(pantryItem.getTitle());
+        spanString.setSpan(new android.text.style.StyleSpan(android.graphics.Typeface.BOLD), 0, spanString.length(), 0);
+        pantryItem.setTitle(spanString);
     }
 
     @Override
