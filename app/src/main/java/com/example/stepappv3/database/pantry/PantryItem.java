@@ -14,9 +14,9 @@ public class PantryItem {
     public int id;
 
     public String name;
-    public String category; // e.g., "Dairy & Eggs", "Produce"
+    public String category;
     public int quantity;
-    public String unit; // e.g., "pcs", "grams", "liters"
+    public String unit;
     @NonNull
     public String userId;
 
@@ -30,10 +30,7 @@ public class PantryItem {
 
 
     }
-
-
     @Ignore
     public PantryItem(){
-
     }
 }

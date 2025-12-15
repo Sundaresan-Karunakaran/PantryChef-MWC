@@ -11,6 +11,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.NavDirections;
 
 import com.example.stepappv3.R;
 import com.google.android.gms.common.SignInButton;
@@ -74,31 +75,35 @@ public class LoginFragment extends Fragment {
 
         // Set up the observer for the authentication state
         loginViewModel.authenticationState.observe(getViewLifecycleOwner(), state -> {
-            switch (state) {
-                case AUTHENTICATED:
-                    com.google.firebase.auth.FirebaseUser currentUser = loginViewModel.user.getValue();
+            if (state == AuthenticationState.AUTHENTICATED) {
+                loginProgressBar.setVisibility(View.VISIBLE);
+                googleSignInButton.setEnabled(false);
+            } else {
 
-                    if (currentUser != null) {
-                        // Get the user's unique ID. This is the "key to the kingdom".
-                        String userId = currentUser.getUid();
+                loginProgressBar.setVisibility(View.GONE);
+                googleSignInButton.setEnabled(true);
+            }
+        });
 
-                        // THE FIX: Use the auto-generated Directions class for type-safe navigation.
-                        // This bundles the destination and the userId argument together.
-                        androidx.navigation.NavDirections action = LoginFragmentDirections.actionLoginFragmentToHomeFragment(userId);
+        // OBSERVER 2: This new observer handles the NAVIGATION decision.
+        // It will only fire after a user logs in and the database check is complete.
+        loginViewModel.userProfile.observe(getViewLifecycleOwner(), profile -> {
 
-                        // Perform the navigation using the safe action.
-                        androidx.navigation.Navigation.findNavController(view).navigate(action);
-                    }
-                    break;
-                case IN_PROGRESS:
-                    loginProgressBar.setVisibility(View.VISIBLE);
-                    googleSignInButton.setEnabled(false);
-                    break;
-                case UNAUTHENTICATED:
-                    loginProgressBar.setVisibility(View.GONE);
-                    googleSignInButton.setEnabled(true);
-                    // You could show an error Toast here if needed
-                    break;
+            if (loginViewModel.authenticationState.getValue() != AuthenticationState.AUTHENTICATED) {
+                return;
+            }
+
+            if (profile != null) {
+
+                String userId = profile.userId;
+                NavDirections action =
+                        LoginFragmentDirections.actionLoginFragmentToNavigationHome();
+                androidx.navigation.Navigation.findNavController(view).navigate(action);
+            } else {
+
+                NavDirections action =
+                        LoginFragmentDirections.actionLoginFragmentToProfileSetupFragment();
+                androidx.navigation.Navigation.findNavController(view).navigate(action);
             }
         });
     }

@@ -53,8 +53,8 @@ public class PantryViewModel extends AndroidViewModel {
     // ADD A LAZY-INITIALIZER GETTER FOR THE PARSER
     private GeminiReceiptParser getParser() {
         if (geminiParser == null) {
-            // TODO: Replace "api-key" with a key stored securely, e.g., in BuildConfig
-            geminiParser = new GeminiReceiptParser("api-key");
+            // TODO: Replace "YOUR_API_KEY" with a key stored securely, e.g., in BuildConfig
+            geminiParser = new GeminiReceiptParser("AIzaSyBCFFLcxRgR-THgdo5sn0leuIJq_Mk3toc");
         }
         return geminiParser;
     }
@@ -120,6 +120,7 @@ public class PantryViewModel extends AndroidViewModel {
         staticList.add(new PantryCategory("Spices", R.drawable.ic_spices));
         staticList.add(new PantryCategory("Grains and Pulses", R.drawable.ic_grains_pulses));
         staticList.add(new PantryCategory("Fruits", R.drawable.ic_fruits));
+        staticList.add(new PantryCategory("Oils", R.drawable.ic_fruits));
 
         // Post the list to our LiveData stream.
         _categories.setValue(staticList);

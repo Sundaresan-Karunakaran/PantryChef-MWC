@@ -20,6 +20,10 @@
         android:id="@+id/navigation_pantry"
         android:icon="@drawable/ic_fridge"
         android:title="Pantry" />
+    <item
+        android:id="@+id/navigation_recommendations"
+        android:icon="@drawable/ic_recommendation"
+        android:title="Recipes" />
 
 </menu>
     

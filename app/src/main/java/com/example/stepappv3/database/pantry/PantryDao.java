@@ -26,4 +26,8 @@ public interface PantryDao {
 
     @Query("SELECT * FROM pantry_items WHERE category = :categoryName AND userId = :userId ORDER BY quantity ASC")
     LiveData<List<PantryItem>> getItemsByCategoryUser(String categoryName,String userId);
+
+
+    @androidx.room.Update
+    void update(PantryItem item);
 }

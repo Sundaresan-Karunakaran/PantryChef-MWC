@@ -58,7 +58,7 @@ public class MainActivity extends AppCompatActivity {
 
         navController.addOnDestinationChangedListener((controller, destination, arguments) -> {
             // Check the ID of the new destination.
-            if (destination.getId() == R.id.loginFragment) {
+            if (destination.getId() == R.id.loginFragment || destination.getId() == R.id.profileSetupFragment) {
                 // If we are on the login screen, HIDE the bottom navigation bar.
                 navView.setVisibility(View.GONE);
             } else {

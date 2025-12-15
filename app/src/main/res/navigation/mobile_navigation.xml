@@ -5,19 +5,6 @@
     android:id="@+id/mobile_navigation"
     app:startDestination="@id/loginFragment">  <!-- THIS IS THE KEY -->
 
-    <fragment
-        android:id="@+id/loginFragment"
-        android:name="com.example.stepappv3.login.LoginFragment"
-        android:label="Login"
-        tools:layout="@layout/fragment_login">
-
-        <!-- STEP 4: Define the action (the "track") from Login to Home -->
-        <action
-            android:id="@+id/action_loginFragment_to_homeFragment"
-            app:destination="@id/navigation_home"
-            app:popUpTo="@id/loginFragment"
-            app:popUpToInclusive="true" />
-    </fragment>
 
     <fragment
         android:id="@+id/navigation_home"
@@ -25,11 +12,58 @@
         android:label="Home"
         tools:layout="@layout/fragment_home">
 
-        <!-- STEP 3: Define the argument (the "pass") that Home now requires -->
-        <argument
-            android:name="userId"
-            app:argType="string" />
     </fragment>
+
+    <fragment
+        android:id="@+id/profileSetupFragment"
+        android:name="com.example.stepappv3.ui.profile.ProfileSetupFragment"
+        android:label="Complete Your Profile"
+        tools:layout="@layout/fragment_profile_setup" >
+
+        <!-- In the future, you will define the action FROM this screen TO the home screen here -->
+        <action
+            android:id="@+id/action_profileSetupFragment_to_navigation_home"
+            app:destination="@id/navigation_home"
+            app:popUpTo="@id/mobile_navigation"
+            app:popUpToInclusive="true" />
+
+    </fragment>
+
+    <fragment
+        android:id="@+id/loginFragment"
+        android:name="com.example.stepappv3.login.LoginFragment"
+        android:label="Login"
+        tools:layout="@layout/fragment_login">
+
+        <action
+            android:id="@+id/action_loginFragment_to_navigation_home"
+            app:destination="@id/navigation_home"
+            app:popUpTo="@id/mobile_navigation"
+            app:popUpToInclusive="true" />
+
+        <action
+            android:id="@+id/action_loginFragment_to_profileSetupFragment"
+            app:destination="@id/profileSetupFragment"
+            app:popUpTo="@id/mobile_navigation"
+            app:popUpToInclusive="true" />
+
+
+    </fragment>
+
+    <fragment
+        android:id="@+id/pantryListFragment"
+        android:name="com.example.stepappv3.ui.pantry.PantryListFragment"
+        android:label="{categoryName}"
+        tools:layout="@layout/fragment_pantry_list" >
+
+        <!-- We will define the argument it receives here -->
+        <argument
+            android:name="categoryName"
+            app:argType="string" />
+
+    </fragment>
+
+
     <fragment
         android:id="@+id/navigation_profile"
         android:name="com.example.stepappv3.ui.profile.ProfileFragment"
@@ -40,7 +74,42 @@
         android:id="@+id/navigation_pantry"
         android:name="com.example.stepappv3.ui.pantry.PantryFragment"
         android:label="Home"
-        tools:layout="@layout/fragment_pantry" />
+        tools:layout="@layout/fragment_pantry" >
+
+        <action
+            android:id="@+id/action_pantryFragment_to_pantryListFragment"
+            app:destination="@id/pantryListFragment" />
+
+    </fragment>
+
+    <fragment
+        android:id="@+id/navigation_recommendations"
+        android:name="com.example.stepappv3.ui.recipes.RecommendationFragment"
+        android:label="Recipes"
+        tools:layout="@layout/fragment_recommendation" >
+
+        <action
+            android:id="@+id/action_recommendationsFragment_to_recipeDetailFragment"
+            app:destination="@id/recipeDetailFragment" />
+
+    </fragment>
+
+    <fragment
+        android:id="@+id/recipeDetailFragment"
+        android:name="com.example.stepappv3.ui.recipes.RecipeDetailFragment"
+        android:label="{recipeName}"
+        tools:layout="@layout/fragment_recipe_detail">
+
+        <argument
+            android:name="recipeId"
+            app:argType="integer" />
+
+        <argument
+            android:name="recipeName"
+            app:argType="string" />
+
+    </fragment>
+
 
 
 </navigation>

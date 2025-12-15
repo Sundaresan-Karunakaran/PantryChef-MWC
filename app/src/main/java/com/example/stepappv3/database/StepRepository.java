@@ -4,6 +4,10 @@ import android.os.Looper;
 
 import androidx.lifecycle.LiveData;
 
+import com.example.stepappv3.database.profile.UserProfile;
+import com.example.stepappv3.database.profile.UserProfileDao;
+import com.example.stepappv3.database.recipes.Recipe;
+import com.example.stepappv3.database.recipes.RecipeDao;
 import com.example.stepappv3.database.steps.Step;
 import com.example.stepappv3.database.steps.StepDao;
 import com.example.stepappv3.database.pantry.PantryDao;
@@ -15,11 +19,16 @@ import java.util.List;
 public class StepRepository {
     private final StepDao stepDao;
     private final PantryDao pantryDao;
+    private final RecipeDao recipeDao;
+    private final UserProfileDao userDao;
+
 
     public StepRepository(Application application) {
         StepDatabase db = StepDatabase.getDatabase(application);
         stepDao = db.stepDao();
         pantryDao = db.pantryDao();
+        recipeDao = db.recipeDao();
+        userDao = db.userProfileDao();
     }
 
     public LiveData<Integer> getDailyStepsUser(long sinceTimestamp,String userId){
@@ -65,6 +74,12 @@ public class StepRepository {
         });
     }
 
+    public void insertUserProfile(UserProfile userProfile) {
+        StepDatabase.databaseWriteExecutor.execute(() -> {
+            userDao.insert(userProfile);
+        });
+    }
+
     public LiveData<List<PantryItem>> getItemsByCategoryUser(String category,String userId) {
         return pantryDao.getItemsByCategoryUser(category,userId);
     }
@@ -72,4 +87,23 @@ public class StepRepository {
     public LiveData<List<PantryItem>> getAllPantryItemsUser(String userId) {
         return pantryDao.getAllItemsUser(userId);
     }
+
+    public void updatePantryItem(PantryItem item) {
+        StepDatabase.databaseWriteExecutor.execute(() -> {
+            pantryDao.update(item);
+        });
+    }
+
+    public LiveData<List<Recipe>> getAllRecipes(){
+        return recipeDao.getAllRecipes();
+    }
+
+    public LiveData<Recipe> getRecipeById(int recipeId) {
+        return recipeDao.getRecipeById(recipeId);
+    }
+
+    public LiveData<UserProfile> getUserProfile(String userId){
+        return userDao.getProfile(userId);
+    }
+
 }

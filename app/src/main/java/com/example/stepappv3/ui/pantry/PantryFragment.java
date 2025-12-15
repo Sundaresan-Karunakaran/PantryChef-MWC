@@ -12,6 +12,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.stepappv3.R;
 import java.util.ArrayList;
@@ -25,7 +27,7 @@ import android.widget.Toast;
 
 
 
-public class PantryFragment extends Fragment implements PantryAddOption.OnPantryOptionSelectedListener {
+public class PantryFragment extends Fragment implements PantryAddOption.OnPantryOptionSelectedListener, PantryCategoryAdapter.OnCategoryClickListener  {
 
     private PantryViewModel pantryViewModel;
     private RecyclerView categoryRecyclerView;
@@ -33,7 +35,32 @@ public class PantryFragment extends Fragment implements PantryAddOption.OnPantry
     private LinearLayout emptyPantryView;
     private FloatingActionButton addPantryItemFab;
     private ActivityResultLauncher<Void> takePictureLauncher;
-    private ActivityResultLauncher<String> requestCameraPermissionLauncher; // <-- ADD THIS LINE
+    private ActivityResultLauncher<String> requestCameraPermissionLauncher;
+
+
+    private void setupRecyclerView() {
+        categoryRecyclerView.setLayoutManager(new GridLayoutManager(getContext(), 2));
+
+        // 2. Pass 'this' (the fragment) as the listener when creating the adapter.
+        adapter = new PantryCategoryAdapter(this);
+
+        categoryRecyclerView.setAdapter(adapter);
+    }
+
+    @Override
+    public void onCategoryClick(PantryCategory category) {
+        // We have received the click event and the data for the clicked category.
+        // Now, we perform the navigation.
+
+        // Use the auto-generated Directions class for type-safe navigation
+        PantryFragmentDirections.ActionPantryFragmentToPantryListFragment action =
+                PantryFragmentDirections.actionPantryFragmentToPantryListFragment(category.getName());
+
+        // Find the NavController and navigate
+        NavController navController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment);
+        navController.navigate(action);
+    }
+
 
 
 
@@ -93,33 +120,21 @@ public class PantryFragment extends Fragment implements PantryAddOption.OnPantry
         setupClickListeners();
     }
 
-    private void setupRecyclerView() {
-        // The LayoutManager is already set in XML, but it's good practice to be explicit.
-        // The span count of 2 creates our 2-column grid.
-        categoryRecyclerView.setLayoutManager(new GridLayoutManager(getContext(), 2));
 
-        // Initialize the adapter with an empty list. It will be updated by the observer.
-        adapter = new PantryCategoryAdapter(new ArrayList<>());
-        categoryRecyclerView.setAdapter(adapter);
-    }
 
     // In PantryFragment.java
 
     private void setupObservers() {
         pantryViewModel.categories.observe(getViewLifecycleOwner(), categories -> {
-            // This code runs whenever the ViewModel provides a new list.
-
-            // The logic for the empty state is still perfect.
             if (categories == null || categories.isEmpty()) {
                 categoryRecyclerView.setVisibility(View.GONE);
-                // You'll need to uncomment this line and make sure emptyPantryView is initialized
                 // emptyPantryView.setVisibility(View.VISIBLE);
             } else {
                 categoryRecyclerView.setVisibility(View.VISIBLE);
                 // emptyPantryView.setVisibility(View.GONE);
 
-                // THE FIX: Use our new, efficient update method.
-                adapter.updateData(categories);
+                // 4. Use the ListAdapter's built-in submitList method.
+                adapter.submitList(categories);
             }
         });
 
