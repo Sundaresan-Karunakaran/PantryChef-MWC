@@ -25,7 +25,7 @@ public class GeminiReceiptParser {
     public GeminiReceiptParser(String apiKey) {
         GenerativeModel gm = new GenerativeModel(
                 "gemini-2.5-flash",
-                apiKey
+                "AIzaSyAP17WHFQe6Y_o7mmQgX8HQF3Y1IGazBLo"
         );
         model = GenerativeModelFutures.from(gm);
         executor = Executors.newSingleThreadExecutor();
@@ -35,7 +35,7 @@ public class GeminiReceiptParser {
         CompletableFuture<ParseResult> future = new CompletableFuture<>();
 
         try {
-            // Build content with bitmap directly and text prompt
+            // Build content with bitmap and prompt
             Content content = new Content.Builder()
                     .addImage(bitmap)
                     .addText(
@@ -44,7 +44,8 @@ public class GeminiReceiptParser {
                                     "'Vegetables', 'Fruits', 'Dairy & Eggs', 'Meats & Seafood', 'Bakery', 'Spices','Grains and Pulses', " +
                                     "'Uncategorized'. " +
                                     "For each item, return a single line in the format: Item Name | Category | Quantity | Unit. " +
-                                    "For example: 'Milk | Dairy & Eggs | 1 | ml'. Do not include headers, explanations, or any other text.Always return the Unit in metric system i.e. ml for liquids and grams for solids or none if not specified"
+                                    "For example: 'Milk | Dairy & Eggs | 1 | ml'. Do not include headers, explanations, or any other text. " +
+                                    "Always return the Unit in metric system i.e. ml for liquids and grams for solids or none if not specified"
                     )
                     .build();
 
@@ -58,38 +59,42 @@ public class GeminiReceiptParser {
                 public void onSuccess(GenerateContentResponse result) {
                     try {
                         String text = result.getText();
+
                         if (text == null || text.trim().isEmpty()) {
-                            // Gemini returned nothing.
-                            future.complete(new ParseResult(ParseResult.Status.NO_ITEMS_FOUND, "Could not find any items on the receipt."));
+                            // No text recognized
+                            future.complete(new ParseResult(ParseResult.Status.NO_ITEMS_FOUND, "No text recognized in receipt image."));
                             return;
                         }
+
+                        // Parse text into PantryItem list
                         List<PantryItem> items = parseTextToItems(text);
+
                         if (items.isEmpty()) {
-                            // We got text, but our parser found no valid items.
-                            // This could be because the image was not a receipt.
-                            future.complete(new ParseResult(ParseResult.Status.NO_ITEMS_FOUND, "Could not recognize any items. Is this a receipt?"));
+                            future.complete(new ParseResult(ParseResult.Status.NO_ITEMS_FOUND, "No items found in receipt text."));
                         } else {
-                            // Success!
+                            // Wrap parsed items in a SUCCESS ParseResult
                             future.complete(new ParseResult(items));
                         }
+
                     } catch (Exception e) {
-                        future.completeExceptionally(e);
+                        future.complete(new ParseResult(ParseResult.Status.FAILURE, e.getMessage()));
                     }
                 }
 
                 @Override
                 public void onFailure(Throwable t) {
-                    future.complete(new ParseResult(ParseResult.Status.FAILURE, "Failed to connect to the server."));
+                    future.complete(new ParseResult(ParseResult.Status.FAILURE, t.getMessage()));
                 }
             }, executor);
 
         } catch (Exception e) {
-            future.completeExceptionally(e);
+            future.complete(new ParseResult(ParseResult.Status.FAILURE, e.getMessage()));
         }
 
         return future;
-
     }
+
+
     private List<PantryItem> parseTextToItems(String rawText) {
         List<PantryItem> items = new ArrayList<>();
         if (rawText == null || rawText.trim().isEmpty()) {

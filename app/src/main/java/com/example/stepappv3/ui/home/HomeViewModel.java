@@ -1,79 +1,109 @@
 package com.example.stepappv3.ui.home;
 
 import android.app.Application;
-
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
-import androidx.lifecycle.Transformations;
-import com.example.stepappv3.database.steps.Step;
-import com.example.stepappv3.database.StepRepository;
-import java.util.Calendar;
 import androidx.lifecycle.SavedStateHandle;
 
-public class HomeViewModel extends AndroidViewModel {
-    // For the counting state
-    private final MutableLiveData<Boolean> _isCounting = new MutableLiveData<>(false);
-    public final LiveData<Boolean> isCounting = _isCounting;
+import com.example.stepappv3.database.StepRepository;
+import com.example.stepappv3.database.pantry.PantryItem;
+import com.example.stepappv3.database.steps.Step;
+import com.github.mikephil.charting.data.BarEntry;
 
-    // For the step count
-    private final MutableLiveData<Integer> _steps = new MutableLiveData<>(0);
-    public final LiveData<Integer> steps;
-    private static final int DAILY_STEP_GOAL = 100;
-    private StepRepository repo;
-    public LiveData<Integer> progressPercentage ;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+public class HomeViewModel extends AndroidViewModel {
+
+    public enum FilterType { DAILY, WEEKLY, MONTHLY }
+
+    private final StepRepository repo;
     private final String userId;
-    private StepRepository getRepo(){
-        if (repo == null){
-            repo = new StepRepository(getApplication());
-        }
-        return repo;
+
+    private final MutableLiveData<List<BarEntry>> _stepsGraphData = new MutableLiveData<>();
+    public final LiveData<List<BarEntry>> stepsGraphData = _stepsGraphData;
+
+    private final MutableLiveData<Map<String, Integer>> _pantryPieData = new MutableLiveData<>();
+    public final LiveData<Map<String, Integer>> pantryPieData = _pantryPieData;
+
+    public HomeViewModel(@NonNull Application application, @NonNull SavedStateHandle savedStateHandle) {
+        super(application);
+        repo = new StepRepository(application);
+        userId = savedStateHandle.get("userId");
+
+        loadStepsData(FilterType.DAILY);
+        loadPantryData();
     }
 
-    public HomeViewModel(@NonNull Application application, @NonNull SavedStateHandle savedStateHandle){
-        super(application);
+    public void setFilter(FilterType type) {
+        loadStepsData(type);
+    }
 
+    private void loadStepsData(FilterType type) {
         Calendar calendar = Calendar.getInstance();
+        long endTime = calendar.getTimeInMillis();
+        long startTime = 0;
+
         calendar.set(Calendar.HOUR_OF_DAY, 0);
         calendar.set(Calendar.MINUTE, 0);
         calendar.set(Calendar.SECOND, 0);
-        long startOfTodayTimestamp = calendar.getTimeInMillis();
-        this.userId = savedStateHandle.get("userId");
 
-        // 2. Get the reactive stream for steps today from the repository.
-        LiveData<Integer> rawStepsToday = getRepo().getDailyStepsUser(startOfTodayTimestamp,this.userId);
-
-        // 3. Transform it for the UI, handling the null case.
-        steps = Transformations.map(rawStepsToday, total -> total == null ? 0 : total);
-
-        progressPercentage = Transformations.map(steps, stepCount -> {
-            if (stepCount >= DAILY_STEP_GOAL) {
-                return 100;
-            } else {
-                return (stepCount * 100) / DAILY_STEP_GOAL;
-            }
-        });
-
-    }
-
-    public void onStartStopClicked() {
-        boolean currentState = _isCounting.getValue();
-        _isCounting.setValue(!currentState);
-    }
-    public void onResetClicked() {
-        _steps.setValue(0);
-        _isCounting.setValue(false);
-        getRepo().deleteAllUser(this.userId);
-
-    }
-
-
-    public void onCountClicked() {
-        if (Boolean.TRUE.equals(_isCounting.getValue())) {
-            Step newStep = new Step(System.currentTimeMillis(), 1,this.userId);
-            getRepo().insert(newStep);
+        if (type == FilterType.DAILY) {
+            startTime = calendar.getTimeInMillis();
+        } else if (type == FilterType.WEEKLY) {
+            calendar.add(Calendar.DAY_OF_YEAR, -7);
+            startTime = calendar.getTimeInMillis();
+        } else if (type == FilterType.MONTHLY) {
+            calendar.add(Calendar.DAY_OF_YEAR, -30);
+            startTime = calendar.getTimeInMillis();
         }
+
+        repo.getStepsRangeUser(startTime, endTime, userId, (List<Step> steps) -> {
+            processStepsForGraph(steps, type);
+        });
     }
 
+    private void processStepsForGraph(List<Step> steps, FilterType type) {
+        Map<Integer, Integer> aggregatedData = new HashMap<>();
+        Calendar cal = Calendar.getInstance();
+
+        for (Step step : steps) {
+            // DÜZELTME: getTimestamp() kullanıldı
+            cal.setTimeInMillis(step.getTimestamp());
+            int key;
+
+            if (type == FilterType.DAILY) {
+                key = cal.get(Calendar.HOUR_OF_DAY);
+            } else {
+                key = cal.get(Calendar.DAY_OF_YEAR);
+            }
+
+            // DÜZELTME: getSteps() kullanıldı
+            aggregatedData.put(key, aggregatedData.getOrDefault(key, 0) + step.getSteps());
+        }
+
+        List<BarEntry> entries = new ArrayList<>();
+        for (Map.Entry<Integer, Integer> entry : aggregatedData.entrySet()) {
+            entries.add(new BarEntry(entry.getKey(), entry.getValue()));
+        }
+
+        _stepsGraphData.postValue(entries);
+    }
+
+    private void loadPantryData() {
+        repo.getAllPantryItemsUser(userId).observeForever(items -> {
+            Map<String, Integer> categoryCounts = new HashMap<>();
+            if (items != null) {
+                for (PantryItem item : items) {
+                    categoryCounts.put(item.category, categoryCounts.getOrDefault(item.category, 0) + 1);
+                }
+            }
+            _pantryPieData.setValue(categoryCounts);
+        });
+    }
 }

@@ -1,9 +1,9 @@
 <component name="libraryTable">
   <library name="Gradle: com.google.android.gms:play-services-ads:24.7.0@aar" external-system-id="GRADLE">
     <CLASSES>
-      <root url="file://$USER_HOME$/.gradle/caches/8.13/transforms/33b0ef2cb58bab4d87894c42b2091beb/transformed/play-services-ads-24.7.0/res" />
-      <root url="jar://$USER_HOME$/.gradle/caches/8.13/transforms/33b0ef2cb58bab4d87894c42b2091beb/transformed/play-services-ads-24.7.0/jars/classes.jar!/" />
-      <root url="file://$USER_HOME$/.gradle/caches/8.13/transforms/33b0ef2cb58bab4d87894c42b2091beb/transformed/play-services-ads-24.7.0/AndroidManifest.xml" />
+      <root url="jar://$USER_HOME$/.gradle/caches/8.13/transforms/f6eb0a5eda12cd3f9e515ec6d3dd9398/transformed/play-services-ads-24.7.0/jars/classes.jar!/" />
+      <root url="file://$USER_HOME$/.gradle/caches/8.13/transforms/f6eb0a5eda12cd3f9e515ec6d3dd9398/transformed/play-services-ads-24.7.0/AndroidManifest.xml" />
+      <root url="file://$USER_HOME$/.gradle/caches/8.13/transforms/f6eb0a5eda12cd3f9e515ec6d3dd9398/transformed/play-services-ads-24.7.0/res" />
     </CLASSES>
     <JAVADOC>
       <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.google.android.gms/play-services-ads/24.7.0/c4504b7309765af369df73edd3b02de046a0c5c2/play-services-ads-24.7.0-javadoc.jar!/" />

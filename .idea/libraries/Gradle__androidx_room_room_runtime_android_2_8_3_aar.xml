@@ -1,8 +1,8 @@
 <component name="libraryTable">
   <library name="Gradle: androidx.room:room-runtime-android:2.8.3@aar" external-system-id="GRADLE">
     <CLASSES>
-      <root url="file://$USER_HOME$/.gradle/caches/8.13/transforms/b608f4c0ce377f5340c08fcd6bf6fddb/transformed/room-runtime/AndroidManifest.xml" />
-      <root url="jar://$USER_HOME$/.gradle/caches/8.13/transforms/b608f4c0ce377f5340c08fcd6bf6fddb/transformed/room-runtime/jars/classes.jar!/" />
+      <root url="jar://$USER_HOME$/.gradle/caches/8.13/transforms/94df9c16208b8342931de931fa6adfff/transformed/room-runtime/jars/classes.jar!/" />
+      <root url="file://$USER_HOME$/.gradle/caches/8.13/transforms/94df9c16208b8342931de931fa6adfff/transformed/room-runtime/AndroidManifest.xml" />
     </CLASSES>
     <JAVADOC />
     <SOURCES>

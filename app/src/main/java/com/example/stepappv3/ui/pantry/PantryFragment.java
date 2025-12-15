@@ -2,30 +2,34 @@ package com.example.stepappv3.ui.pantry;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.ImageDecoder;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
+import android.widget.Toast;
+
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.RecyclerView;
-import com.example.stepappv3.R;
-import java.util.ArrayList;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.example.stepappv3.R;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import android.widget.LinearLayout;
-import android.widget.Toast;
+
+import java.io.IOException;
+import java.util.ArrayList;
 
 
-
-public class PantryFragment extends Fragment implements PantryAddOption.OnPantryOptionSelectedListener {
+public class PantryFragment extends Fragment implements PantryAddOption.OnPantryOptionSelectedListener, PantryCategoryAdapter.OnCategoryClickListener {
 
     private PantryViewModel pantryViewModel;
     private RecyclerView categoryRecyclerView;
@@ -34,7 +38,7 @@ public class PantryFragment extends Fragment implements PantryAddOption.OnPantry
     private FloatingActionButton addPantryItemFab;
     private ActivityResultLauncher<Void> takePictureLauncher;
     private ActivityResultLauncher<String> requestCameraPermissionLauncher; // <-- ADD THIS LINE
-
+    private ActivityResultLauncher<String> pickImageLauncher;
 
 
 
@@ -61,6 +65,23 @@ public class PantryFragment extends Fragment implements PantryAddOption.OnPantry
             } else {
                 // The user denied the permission.
                 Toast.makeText(getContext(), "Camera permission denied. Cannot scan receipt.", Toast.LENGTH_SHORT).show();
+            }
+        });
+        // This sets up the contract for what to do AFTER the user picks an image.
+        pickImageLauncher = registerForActivityResult(new ActivityResultContracts.GetContent(), uri -> {
+            if (uri != null) {
+                try {
+                    // Use the modern ImageDecoder to get a Bitmap from the Uri
+                    Bitmap bitmap = ImageDecoder.decodeBitmap(ImageDecoder.createSource(requireContext().getContentResolver(), uri));
+                    // Call Gemini from the viewModel to parse the image
+                    pantryViewModel.parseReceiptImage(bitmap);
+                } catch (IOException e) {
+                    // Handle potential errors, like the file not being found or corrupt
+                    Toast.makeText(getContext(), "Failed to load image.", Toast.LENGTH_SHORT).show();
+                }
+            } else {
+                // The user cancelled or an error occurred.
+                Toast.makeText(getContext(), "No image selected.", Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -94,12 +115,12 @@ public class PantryFragment extends Fragment implements PantryAddOption.OnPantry
     }
 
     private void setupRecyclerView() {
-        // The LayoutManager is already set in XML, but it's good practice to be explicit.
+        // The LayoutManager is already set in XML, but it'''s good practice to be explicit.
         // The span count of 2 creates our 2-column grid.
         categoryRecyclerView.setLayoutManager(new GridLayoutManager(getContext(), 2));
 
-        // Initialize the adapter with an empty list. It will be updated by the observer.
-        adapter = new PantryCategoryAdapter(new ArrayList<>());
+        // Initialize the adapter with an empty list and the click listener.
+        adapter = new PantryCategoryAdapter(new ArrayList<>(), this);
         categoryRecyclerView.setAdapter(adapter);
     }
 
@@ -112,7 +133,7 @@ public class PantryFragment extends Fragment implements PantryAddOption.OnPantry
             // The logic for the empty state is still perfect.
             if (categories == null || categories.isEmpty()) {
                 categoryRecyclerView.setVisibility(View.GONE);
-                // You'll need to uncomment this line and make sure emptyPantryView is initialized
+                // You'''ll need to uncomment this line and make sure emptyPantryView is initialized
                 // emptyPantryView.setVisibility(View.VISIBLE);
             } else {
                 categoryRecyclerView.setVisibility(View.VISIBLE);
@@ -203,12 +224,16 @@ public class PantryFragment extends Fragment implements PantryAddOption.OnPantry
                         launchCameraForReceipt();
                     } else if (which == 1) {
                         // "Choose from gallery" was clicked.
-                        // TODO: In a future step, we will implement the gallery launcher here.
-                        Toast.makeText(getContext(), "Choose from gallery clicked!", Toast.LENGTH_SHORT).show();
+                        pickImageLauncher.launch("image/*");
                     }
                 })
 
                 // 4. Create and show the dialog.
                 .show();
+    }
+
+    @Override
+    public void onCategoryClick(PantryCategory category) {
+        Toast.makeText(getContext(), "You clicked on " + category.getName(), Toast.LENGTH_SHORT).show();
     }
 }

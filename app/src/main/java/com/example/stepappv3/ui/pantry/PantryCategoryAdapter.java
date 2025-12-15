@@ -18,6 +18,10 @@ public class PantryCategoryAdapter extends RecyclerView.Adapter<PantryCategoryAd
 
     // Inside PantryCategoryAdapter.java
 
+    public interface OnCategoryClickListener {
+        void onCategoryClick(PantryCategory category);
+    }
+
     /**
      * A DiffUtil.Callback to efficiently update the RecyclerView.
      * This is the "detective" that finds the differences between two lists.
@@ -48,14 +52,14 @@ public class PantryCategoryAdapter extends RecyclerView.Adapter<PantryCategoryAd
          */
         @Override
         public boolean areItemsTheSame(int oldItemPosition, int newItemPosition) {
-            // For now, since our category has no unique ID, we'll use the name.
+            // For now, since our category has no unique ID, we'''ll use the name.
             // In a real database-backed app, you would compare category.getId().
             return oldList.get(oldItemPosition).getName().equals(newList.get(newItemPosition).getName());
         }
 
         /**
          * Called only if areItemsTheSame() returns true.
-         * This checks if the item's contents have changed, requiring a UI update.
+         * This checks if the item'''s contents have changed, requiring a UI update.
          */
         @Override
         public boolean areContentsTheSame(int oldItemPosition, int newItemPosition) {
@@ -68,9 +72,12 @@ public class PantryCategoryAdapter extends RecyclerView.Adapter<PantryCategoryAd
     }
 
     private final List<PantryCategory> categoryList;
+    private final OnCategoryClickListener clickListener;
 
-    public PantryCategoryAdapter(List<PantryCategory> categoryList) {
+
+    public PantryCategoryAdapter(List<PantryCategory> categoryList, OnCategoryClickListener clickListener) {
         this.categoryList = categoryList;
+        this.clickListener = clickListener;
     }
 
     /**
@@ -92,9 +99,7 @@ public class PantryCategoryAdapter extends RecyclerView.Adapter<PantryCategoryAd
     @Override
     public void onBindViewHolder(@NonNull CategoryViewHolder holder, int position) {
         PantryCategory category = categoryList.get(position);
-        holder.categoryName.setText(category.getName());
-        holder.categoryImage.setImageResource(category.getImageResId());
-        // The subhead is static, so it's already set in the XML.
+        holder.bind(category, clickListener);
     }
 
     /**
@@ -117,7 +122,13 @@ public class PantryCategoryAdapter extends RecyclerView.Adapter<PantryCategoryAd
             super(itemView);
             categoryImage = itemView.findViewById(R.id.category_image);
             categoryName = itemView.findViewById(R.id.category_name);
-            // We don't need a reference to the subhead since it doesn't change.
+            // We don'''t need a reference to the subhead since it doesn'''t change.
+        }
+
+        public void bind(final PantryCategory category, final OnCategoryClickListener listener) {
+            categoryName.setText(category.getName());
+            categoryImage.setImageResource(category.getImageResId());
+            itemView.setOnClickListener(v -> listener.onCategoryClick(category));
         }
     }
 

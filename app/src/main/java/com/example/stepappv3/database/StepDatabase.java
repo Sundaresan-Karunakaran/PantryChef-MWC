@@ -1,7 +1,6 @@
 package com.example.stepappv3.database;
 
-import android.content.Context;
-
+import android.content.Context; // Artık tanınacak
 import androidx.annotation.NonNull;
 import androidx.room.Database;
 import androidx.room.Room;
@@ -14,48 +13,34 @@ import com.example.stepappv3.database.steps.StepDao;
 import com.example.stepappv3.database.pantry.PantryDao;
 import com.example.stepappv3.database.pantry.PantryItem;
 
-
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-@Database(entities = {Step.class,PantryItem.class}, version = 2, exportSchema = false)
+// UserProfile.class listeden çıkarıldı
+@Database(entities = {Step.class, PantryItem.class}, version = 5, exportSchema = false)
 public abstract class StepDatabase extends RoomDatabase {
+
     public abstract StepDao stepDao();
     public abstract PantryDao pantryDao();
 
+    // MIGRATION_1_2: Pantry tablosu ekleme
     static final Migration MIGRATION_1_2 = new Migration(1, 2) {
         @Override
         public void migrate(@NonNull SupportSQLiteDatabase database) {
-            // Since the 'daily_steps' table is unchanged, we only need to
-            // create the new 'pantry_items' table.
-            // This SQL must exactly match the table Room would generate.
-            database.execSQL(
-                    "CREATE TABLE IF NOT EXISTS `pantry_items` (" +
-                            "`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
-                            "`name` TEXT, " +
-                            "`category` TEXT, " +
-                            "`quantity` INTEGER NOT NULL, " +
-                            "`unit` TEXT, " +
-                            "`expiryDate` INTEGER NOT NULL)"
-            );
+            database.execSQL("CREATE TABLE IF NOT EXISTS `pantry_items` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `name` TEXT, `category` TEXT, `quantity` INTEGER NOT NULL, `unit` TEXT, `expiryDate` INTEGER NOT NULL)");
         }
     };
 
+    // MIGRATION_2_3: UserId sütunu ekleme
     static final Migration MIGRATION_2_3 = new Migration(2, 3) {
         @Override
         public void migrate(@NonNull SupportSQLiteDatabase database) {
-            // Add the 'userId' column to the 'daily_steps' table.
-            // We provide a default value ('') for existing rows.
-            database.execSQL(
-                    "ALTER TABLE daily_steps ADD COLUMN userId TEXT NOT NULL DEFAULT ''"
-            );
-            // Add the 'userId' column to the 'pantry_items' table.
-            database.execSQL(
-                    "ALTER TABLE pantry_items ADD COLUMN userId TEXT NOT NULL DEFAULT ''"
-            );
+            // Hata almamak için try-catch eklendi (sütun zaten varsa diye)
+            try { database.execSQL("ALTER TABLE daily_steps ADD COLUMN userId TEXT NOT NULL DEFAULT ''"); } catch (Exception e) {}
+            try { database.execSQL("ALTER TABLE pantry_items ADD COLUMN userId TEXT NOT NULL DEFAULT ''"); } catch (Exception e) {}
+            database.execSQL("CREATE INDEX IF NOT EXISTS `index_daily_steps_userId` ON `daily_steps` (`userId`)");
         }
     };
-
 
     private static volatile StepDatabase instance;
     private static final int NUM_THREADS = 4;
@@ -65,16 +50,15 @@ public abstract class StepDatabase extends RoomDatabase {
         if(instance == null){
             synchronized (StepDatabase.class){
                 instance = Room.databaseBuilder(
-                        context.getApplicationContext(),
-                        StepDatabase.class,
-                        "step_database")
+                                context.getApplicationContext(),
+                                StepDatabase.class,
+                                "step_database")
+                        // Migration hatalarını önlemek için:
                         .fallbackToDestructiveMigration()
                         .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
                         .build();
-
             }
         }
         return instance;
     }
-
 }
