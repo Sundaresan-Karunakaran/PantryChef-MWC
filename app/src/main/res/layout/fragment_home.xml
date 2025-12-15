@@ -18,16 +18,18 @@
             android:layout_height="wrap_content"
             android:gravity="center"
             app:selectionRequired="true"
-            app:singleSelection="true">
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnDay"
-                style="@style/Widget.Material3.Button.OutlinedButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Full"
-                android:text="Daily" />
+            app:singleSelection="true"
+            app:checkedButton="@+id/btnDay"> <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnDay"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Full"
+            android:text="Daily"
+            app:strokeColor="#FF4D00"
+            app:backgroundTint="@color/selector_toggle_bg"
+            android:textColor="@color/selector_toggle_text" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnWeek"
@@ -36,7 +38,10 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Full"
-                android:text="Weekly" />
+                android:text="Weekly"
+                app:strokeColor="#FF4D00"
+                app:backgroundTint="@color/selector_toggle_bg"
+                android:textColor="@color/selector_toggle_text" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnMonth"
@@ -45,7 +50,10 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Full"
-                android:text="Monthly" />
+                android:text="Monthly"
+                app:strokeColor="#FF4D00"
+                app:backgroundTint="@color/selector_toggle_bg"
+                android:textColor="@color/selector_toggle_text" />
         </com.google.android.material.button.MaterialButtonToggleGroup>
 
         <TextView

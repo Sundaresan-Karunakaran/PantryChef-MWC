@@ -193,12 +193,20 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnSettings"
-            style="@style/Widget.Material3.Button.TonalButton"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="60dp"
             android:text="Settings"
             android:layout_marginBottom="12dp"
-            app:icon="@drawable/ic_settings"/>
+
+            android:textColor="@android:color/white"
+            app:iconTint="@android:color/white"
+            app:backgroundTint="#FF4D00"
+
+            app:icon="@drawable/ic_settings"
+            app:iconGravity="textStart"
+            app:iconPadding="16dp"
+            app:strokeWidth="0dp"
+            app:cornerRadius="30dp" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnLogout"

@@ -37,10 +37,19 @@
     <style name="Theme.App.Starting" parent="Theme.Material3.DayNight.NoActionBar">
         <item name="android:windowBackground">#FF4D00</item>
         <item name="android:statusBarColor">#FF4D00</item>
+        <item name="android:navigationBarColor">#FF4D00</item>
         <item name="android:windowSplashScreenBackground">#FF4D00</item>
-
         <item name="android:windowSplashScreenAnimatedIcon">@drawable/ic_splash_with_padding</item>
-
         <item name="android:windowSplashScreenIconBackgroundColor">#FF4D00</item>
+    </style>
+
+    <style name="Theme.App.BottomNav" parent="ThemeOverlay.Material3.DynamicColors.DayNight">
+        <item name="colorSecondaryContainer">#FF4D00</item>
+
+        <item name="colorOnSecondaryContainer">@android:color/white</item>
+
+        <item name="colorOnSurfaceVariant">#757575</item>
+
+        <item name="android:background">@android:color/white</item>
     </style>
 </resources>
