@@ -1,0 +1,14 @@
+<component name="libraryTable">
+  <library name="Gradle: androidx.browser:browser:1.8.0@aar" external-system-id="GRADLE">
+    <ANNOTATIONS>
+      <root url="jar://$USER_HOME$/.gradle/caches/8.13/transforms/805a84f454cc2d17e99373a6ea337dd9/transformed/browser-1.8.0/annotations.zip!/" />
+    </ANNOTATIONS>
+    <CLASSES>
+      <root url="file://$USER_HOME$/.gradle/caches/8.13/transforms/805a84f454cc2d17e99373a6ea337dd9/transformed/browser-1.8.0/AndroidManifest.xml" />
+      <root url="file://$USER_HOME$/.gradle/caches/8.13/transforms/805a84f454cc2d17e99373a6ea337dd9/transformed/browser-1.8.0/res" />
+      <root url="jar://$USER_HOME$/.gradle/caches/8.13/transforms/805a84f454cc2d17e99373a6ea337dd9/transformed/browser-1.8.0/jars/classes.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
