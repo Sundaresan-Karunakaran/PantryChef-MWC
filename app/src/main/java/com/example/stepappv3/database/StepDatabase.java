@@ -20,8 +20,12 @@ import com.example.stepappv3.database.pantry.PantryDao;
 import com.example.stepappv3.database.pantry.PantryItem;
 import com.example.stepappv3.database.recipes.Recipe;
 import com.example.stepappv3.database.recipes.RecipeDao;
-import com.example.stepappv3.util.DataLoadingManager;
+// import com.example.stepappv3.util.DataLoadingManager; // Bu sınıf artık gerekli değil, çünkü onOpen metodu temizlendi.
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -70,37 +74,53 @@ public abstract class StepDatabase extends RoomDatabase {
             public void onCreate(@NonNull SupportSQLiteDatabase db) {
                 super.onCreate(db);
                 databaseWriteExecutor.execute(() -> {
-                    parseRecipesFromCsv(context);
-                    DataLoadingManager.getInstance(context).setDataLoadingComplete();
+                    // onCreate sadece DB ilk oluşturulduğunda çalışır.
+                    parseRecipesFromCsv(context, instance);
+                    // DataLoadingManager kaldırıldı
                 });
             }
 
-            @Override
-            public void onOpen(@NonNull SupportSQLiteDatabase db) {
-                super.onOpen(db);
-                databaseWriteExecutor.execute(() -> {
-                    if (!DataLoadingManager.getInstance(context).isDataLoadingComplete()) {
-                        parseRecipesFromCsv(context);
-                        DataLoadingManager.getInstance(context).setDataLoadingComplete();
-                    }
-                });
-            }
+            // Arkadaşınızın kodunda onOpen metodu yoktu.
+            // Sizin DataLoadingManager kontrolünüz kaldırıldı.
+            // onOpen'a ihtiyacınız varsa, buraya ekleyebilirsiniz, ancak
+            // performansı artırmak için çıkarılmış varsayıyorum.
         };
     }
 
-    private static void parseRecipesFromCsv(Context context) {
-        if (instance == null) return;
+    // Arkadaşınızdan alınan daha güvenilir CSV ayrıştırma metodu.
+    private static List<String> parseCsvLine(String line) {
+        List<String> tokens = new ArrayList<>();
+        StringBuilder currentToken = new StringBuilder();
+        boolean inQuotes = false;
+        for (char c : line.toCharArray()) {
+            if (c == '\"') {
+                inQuotes = !inQuotes; // Tırnak içi/dışı durumunu değiştir
+            } else if (c == ',' && !inQuotes) {
+                tokens.add(currentToken.toString());
+                currentToken.setLength(0); // Bir sonraki token için sıfırla
+            } else {
+                currentToken.append(c);
+            }
+        }
+        tokens.add(currentToken.toString()); // Son token'ı ekle
+        return tokens;
+    }
 
-        RecipeDao dao = instance.recipeDao();
-        final java.util.regex.Pattern csvSplitPattern = java.util.regex.Pattern.compile(",(?=([^\"]*\"[^\"]*\")*[^\"]*$)");
+    private static void parseRecipesFromCsv(Context context, StepDatabase db) {
+        if (db == null) return;
+        RecipeDao dao = db.recipeDao();
 
-        try (java.io.BufferedReader reader = new java.io.BufferedReader(
-                new java.io.InputStreamReader(context.getAssets().open("final_recipes.csv")))) {
+        // --- BATCHING STRATEGY (Arkadaşınızdan alındı) ---
+        final int BATCH_SIZE = 100;
+        List<Recipe> recipeBatch = new ArrayList<>(BATCH_SIZE);
+        long totalRecipesInserted = 0;
+
+        try (BufferedReader reader = new BufferedReader(
+                new InputStreamReader(context.getAssets().open("final_recipes.csv")))) {
 
             String line;
             boolean isFirstLine = true;
-            List<Recipe> recipeList = new java.util.ArrayList<>();
-            Log.d("DatabaseSetup", "Starting to parse recipes from CSV.");
+            Log.d("DatabaseSetup", "Starting to parse recipes from CSV in batches.");
 
             while ((line = reader.readLine()) != null) {
                 if (isFirstLine) {
@@ -108,38 +128,51 @@ public abstract class StepDatabase extends RoomDatabase {
                     continue;
                 }
 
-                String[] tokens = csvSplitPattern.split(line);
+                List<String> tokens = parseCsvLine(line); // Arkadaşınızın ayrıştırma metodu
 
-                if (tokens.length >= 11) {
+                if (tokens.size() >= 11) {
                     try {
                         Recipe recipe = new Recipe(
-                                safeParseInt(unquoter(tokens[0])),       // recipeId
-                                unquoter(tokens[1]),                     // name
-                                unquoter(tokens[2]),                     // servingSize
-                                safeParseInt(unquoter(tokens[3])),       // servings
-                                unquoter(tokens[4]),                     // steps
-                                unquoter(tokens[5]),                     // ingredients
-                                unquoter(tokens[6]),                     // missingNutrients
-                                safeParseDouble(unquoter(tokens[7])),    // calories
-                                safeParseDouble(unquoter(tokens[8])),    // totalFat
-                                safeParseDouble(unquoter(tokens[9])),    // totalSugars
-                                safeParseDouble(unquoter(tokens[10]))    // dietaryFiber
+                                safeParseInt(unquoter(tokens.get(0))),
+                                unquoter(tokens.get(1)),
+                                unquoter(tokens.get(2)),
+                                safeParseInt(unquoter(tokens.get(3))),
+                                unquoter(tokens.get(4)),
+                                unquoter(tokens.get(5)),
+                                unquoter(tokens.get(6)),
+                                safeParseDouble(unquoter(tokens.get(7))),
+                                safeParseDouble(unquoter(tokens.get(8))),
+                                safeParseDouble(unquoter(tokens.get(9))),
+                                safeParseDouble(unquoter(tokens.get(10)))
                         );
-                        recipeList.add(recipe);
+                        recipeBatch.add(recipe);
+
+                        // Batch dolduğunda, DB'ye toplu ekleme yap ve listeyi temizle.
+                        if (recipeBatch.size() >= BATCH_SIZE) {
+                            dao.insertAllRecipes(recipeBatch);
+                            totalRecipesInserted += recipeBatch.size();
+                            recipeBatch.clear();
+                        }
+
                     } catch (Exception e) {
                         Log.e("DatabaseSetup", "Skipping malformed line: " + line, e);
                     }
                 }
             }
 
-            if (!recipeList.isEmpty()) {
-                dao.insertAllRecipes(recipeList);
-                Log.d("DatabaseSetup", "Successfully inserted " + recipeList.size() + " recipes.");
+            // Tam batch yapmayan kalan tarifleri ekle.
+            if (!recipeBatch.isEmpty()) {
+                dao.insertAllRecipes(recipeBatch);
+                totalRecipesInserted += recipeBatch.size();
             }
-        } catch (java.io.IOException e) {
+
+            Log.d("DatabaseSetup", "Successfully inserted a total of " + totalRecipesInserted + " recipes.");
+
+        } catch (IOException e) {
             Log.e("DatabaseSetup", "Failed to read CSV file.", e);
         }
     }
+
 
     private static volatile StepDatabase instance;
     private static final int NUM_THREADS = 4;

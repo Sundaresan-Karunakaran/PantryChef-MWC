@@ -55,7 +55,7 @@ public class PantryViewModel extends AndroidViewModel {
     private GeminiReceiptParser getParser() {
         if (geminiParser == null) {
             // TODO: Replace "YOUR_API_KEY" with a key stored securely, e.g., in BuildConfig
-            geminiParser = new GeminiReceiptParser("mwc");
+            geminiParser = new GeminiReceiptParser("AIzaSyBEXUTFjgPu7b1qMpLiLqL40GpGMKYYYXI");
         }
         return geminiParser;
     }

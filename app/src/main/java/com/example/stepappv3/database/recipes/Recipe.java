@@ -21,6 +21,7 @@ public class Recipe {
     public String servingSize;
     public String ingredients;
 
+
     // Room bu boş constructor'ı kullanacak (Bu yüzden @Ignore yok)
     public Recipe() {
     }

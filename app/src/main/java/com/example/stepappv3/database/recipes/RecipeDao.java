@@ -21,5 +21,8 @@ public interface RecipeDao {
     @Query("SELECT * FROM recipes WHERE recipeId = :recipeId")
     LiveData<Recipe> getRecipeById(int recipeId);
 
+    @Query("SELECT recipeId, name, ingredients, calories FROM recipes")
+    LiveData<List<RecipeIngredientInfo>> getRecipeIngredientInfoList();
+
 
 }

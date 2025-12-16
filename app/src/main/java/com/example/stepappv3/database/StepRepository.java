@@ -17,6 +17,8 @@ import com.example.stepappv3.database.pantry.PantryItem;
 // Tarif veritabanı sınıfları
 import com.example.stepappv3.database.recipes.Recipe;
 import com.example.stepappv3.database.recipes.RecipeDao;
+// Arkadaşınızdan gelen RecipeIngredientInfo sınıfı import edildi
+import com.example.stepappv3.database.recipes.RecipeIngredientInfo;
 
 // DÜZELTİLEN KISIM: UserProfile doğru paketten çekiliyor (profile -> user)
 import com.example.stepappv3.database.user.UserProfile;
@@ -37,7 +39,7 @@ public class StepRepository {
         StepDatabase db = StepDatabase.getDatabase(application);
         stepDao = db.stepDao();
         pantryDao = db.pantryDao();
-        recipeDao = db.recipeDao(); // Tarif DAO'su (Eğer StepDatabase içinde tanımlıysa)
+        recipeDao = db.recipeDao();
 
         firestore = FirebaseFirestore.getInstance();
     }
@@ -141,8 +143,10 @@ public class StepRepository {
     // 4. TARİF (RECIPE) METODLARI (ROOM)
     // ==========================================
 
-    public LiveData<List<Recipe>> getAllRecipes(){
-        return recipeDao.getAllRecipes();
+    // Arkadaşınızın kullandığı, RecipeIngredientInfo tipini döndüren metot.
+    // Bu, liste ekranı için optimize edilmiş (daha az veri içeren) bir model olabilir.
+    public LiveData<List<RecipeIngredientInfo>> getAllRecipes(){
+        return recipeDao.getRecipeIngredientInfoList();
     }
 
     public LiveData<Recipe> getRecipeById(int recipeId) {
