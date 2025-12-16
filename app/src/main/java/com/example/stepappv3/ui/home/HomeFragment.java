@@ -14,17 +14,23 @@ import com.example.stepappv3.R;
 import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.charts.PieChart;
 import com.github.mikephil.charting.components.XAxis;
+import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.BarData;
 import com.github.mikephil.charting.data.BarDataSet;
 import com.github.mikephil.charting.data.BarEntry;
 import com.github.mikephil.charting.data.PieData;
 import com.github.mikephil.charting.data.PieDataSet;
 import com.github.mikephil.charting.data.PieEntry;
+import com.github.mikephil.charting.formatter.PercentFormatter; // EKLENDİ
+import com.github.mikephil.charting.formatter.ValueFormatter;
 import com.github.mikephil.charting.utils.ColorTemplate;
 import com.google.android.material.button.MaterialButtonToggleGroup;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 public class HomeFragment extends Fragment {
@@ -55,27 +61,53 @@ public class HomeFragment extends Fragment {
         setupObservers();
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (homeViewModel != null) {
+            homeViewModel.refresh();
+        }
+    }
+
     private void setupCharts() {
-        // Bar Chart Ayarları
+        // --- 1. BAR CHART (ADIMLAR) AYARLARI (Boyutlar Geri Alındı) ---
         barChartSteps.getDescription().setEnabled(false);
         barChartSteps.setDrawGridBackground(false);
-        barChartSteps.getXAxis().setPosition(XAxis.XAxisPosition.BOTTOM);
-        barChartSteps.getXAxis().setGranularity(1f);
-        barChartSteps.getAxisRight().setEnabled(false); // Sağ ekseni kapat
+        barChartSteps.setDrawBarShadow(false);
+        barChartSteps.animateY(1500);
 
-        // Pie Chart Ayarları
+        XAxis xAxis = barChartSteps.getXAxis();
+        xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
+        xAxis.setDrawGridLines(false);
+        xAxis.setGranularity(1f);
+        xAxis.setTextColor(Color.DKGRAY);
+        xAxis.setTextSize(10f); // ESKİ BOYUT
+
+        YAxis leftAxis = barChartSteps.getAxisLeft();
+        leftAxis.setDrawGridLines(true);
+        leftAxis.setAxisMinimum(0f);
+        leftAxis.setTextSize(10f); // ESKİ BOYUT
+
+        barChartSteps.getAxisRight().setEnabled(false);
+        barChartSteps.getLegend().setEnabled(false);
+
+        // --- 2. PIE CHART (DONUT) AYARLARI (Boyutlar Korundu/Büyütüldü) ---
+        pieChartPantry.setUsePercentValues(true);
         pieChartPantry.getDescription().setEnabled(false);
+
         pieChartPantry.setCenterText("Pantry\nItems");
-        pieChartPantry.setCenterTextSize(14f);
+        pieChartPantry.setCenterTextSize(20f); // BÜYÜTÜLMÜŞ BOYUT
+
         pieChartPantry.setHoleRadius(40f);
         pieChartPantry.setTransparentCircleRadius(45f);
-        pieChartPantry.getLegend().setEnabled(false); // Efsaneyi kapat, dilimlerin üzerine yazacağız
+        pieChartPantry.getLegend().setEnabled(false);
+
+        pieChartPantry.setEntryLabelColor(Color.WHITE);
+        pieChartPantry.setEntryLabelTextSize(14f); // BÜYÜTÜLMÜŞ BOYUT
     }
 
     private void setupToggle() {
-        // Varsayılan seçim
         toggleGroupTime.check(R.id.btnDay);
-
         toggleGroupTime.addOnButtonCheckedListener((group, checkedId, isChecked) -> {
             if (isChecked) {
                 if (checkedId == R.id.btnDay) {
@@ -90,44 +122,85 @@ public class HomeFragment extends Fragment {
     }
 
     private void setupObservers() {
-        // Adım Grafiği Güncelleme
         homeViewModel.stepsGraphData.observe(getViewLifecycleOwner(), entries -> {
             if (entries != null) {
-                BarDataSet set = new BarDataSet(entries, "Steps");
-                set.setColors(ColorTemplate.MATERIAL_COLORS);
-                set.setValueTextSize(10f);
-
-                BarData data = new BarData(set);
-                data.setBarWidth(0.9f); // Çubuk genişliği
-
-                barChartSteps.setData(data);
-                barChartSteps.animateY(1000);
-                barChartSteps.invalidate(); // Grafiği yenile
+                updateBarChart(entries, homeViewModel.currentFilter.getValue());
             }
         });
 
-        // Kiler Pasta Grafiği Güncelleme
         homeViewModel.pantryPieData.observe(getViewLifecycleOwner(), categoryCounts -> {
-            List<PieEntry> pieEntries = new ArrayList<>();
+            updatePieChart(categoryCounts);
+        });
+    }
 
-            // Map'ten veriyi PieEntry'e çevir
-            for (Map.Entry<String, Integer> entry : categoryCounts.entrySet()) {
-                // Sadece 0'dan büyük olanları ekle
-                if (entry.getValue() > 0) {
-                    pieEntries.add(new PieEntry(entry.getValue(), entry.getKey()));
+    private void updateBarChart(List<BarEntry> entries, HomeViewModel.FilterType filterType) {
+        BarDataSet set;
+        if (barChartSteps.getData() != null && barChartSteps.getData().getDataSetCount() > 0) {
+            set = (BarDataSet) barChartSteps.getData().getDataSetByIndex(0);
+            set.setValues(entries);
+            set.setColor(Color.parseColor("#FF4D00"));
+            set.setValueTextSize(10f); // ESKİ BOYUT
+            barChartSteps.getData().setBarWidth(0.2f);
+            barChartSteps.getData().notifyDataChanged();
+            barChartSteps.notifyDataSetChanged();
+        } else {
+            set = new BarDataSet(entries, "Steps");
+            set.setColor(Color.parseColor("#FF4D00"));
+            set.setValueTextColor(Color.BLACK);
+            set.setValueTextSize(10f); // ESKİ BOYUT
+
+            BarData data = new BarData(set);
+            data.setBarWidth(0.2f);
+            barChartSteps.setData(data);
+        }
+
+        XAxis xAxis = barChartSteps.getXAxis();
+        xAxis.setValueFormatter(new ValueFormatter() {
+            private final SimpleDateFormat dayFormat = new SimpleDateFormat("MMM d", Locale.getDefault());
+            @Override
+            public String getAxisLabel(float value, com.github.mikephil.charting.components.AxisBase axis) {
+                int val = (int) value;
+                if (filterType == HomeViewModel.FilterType.DAILY) {
+                    return String.format(Locale.getDefault(), "%02d:00", val);
+                } else {
+                    Calendar cal = Calendar.getInstance();
+                    cal.set(Calendar.DAY_OF_YEAR, val);
+                    return dayFormat.format(cal.getTime());
                 }
             }
-
-            PieDataSet dataSet = new PieDataSet(pieEntries, "Categories");
-            dataSet.setColors(ColorTemplate.JOYFUL_COLORS); // Renkli bir palet
-            dataSet.setSliceSpace(2f);
-            dataSet.setValueTextSize(12f);
-            dataSet.setValueTextColor(Color.WHITE);
-
-            PieData data = new PieData(dataSet);
-            pieChartPantry.setData(data);
-            pieChartPantry.animateXY(1000, 1000);
-            pieChartPantry.invalidate();
         });
+
+        barChartSteps.invalidate();
+        barChartSteps.animateY(1000);
+    }
+    private void updatePieChart(Map<String, Integer> categoryCounts) {
+        List<PieEntry> pieEntries = new ArrayList<>();
+        for (Map.Entry<String, Integer> entry : categoryCounts.entrySet()) {
+            if (entry.getValue() > 0) {
+                pieEntries.add(new PieEntry(entry.getValue(), entry.getKey()));
+            }
+        }
+
+        if (pieEntries.isEmpty()) {
+            pieChartPantry.setCenterText("No Data");
+            pieChartPantry.setData(null);
+            pieChartPantry.invalidate();
+            return;
+        }
+
+        pieChartPantry.setCenterText("Pantry\nItems");
+        PieDataSet dataSet = new PieDataSet(pieEntries, "");
+        dataSet.setColors(ColorTemplate.JOYFUL_COLORS);
+        dataSet.setSliceSpace(3f);
+        dataSet.setSelectionShift(5f);
+
+        PieData data = new PieData(dataSet);
+        data.setValueFormatter(new PercentFormatter(pieChartPantry));
+        data.setValueTextSize(16f); // BÜYÜK BOYUT KORUNDU
+        data.setValueTextColor(Color.WHITE);
+
+        pieChartPantry.setData(data);
+        pieChartPantry.animateY(1000);
+        pieChartPantry.invalidate();
     }
 }

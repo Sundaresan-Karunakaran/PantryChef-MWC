@@ -11,6 +11,8 @@ import com.example.stepappv3.database.StepRepository;
 import com.example.stepappv3.database.pantry.PantryItem;
 import com.example.stepappv3.database.steps.Step;
 import com.github.mikephil.charting.data.BarEntry;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -23,7 +25,7 @@ public class HomeViewModel extends AndroidViewModel {
     public enum FilterType { DAILY, WEEKLY, MONTHLY }
 
     private final StepRepository repo;
-    private final String userId;
+    private String userId;
 
     private final MutableLiveData<List<BarEntry>> _stepsGraphData = new MutableLiveData<>();
     public final LiveData<List<BarEntry>> stepsGraphData = _stepsGraphData;
@@ -31,35 +33,59 @@ public class HomeViewModel extends AndroidViewModel {
     private final MutableLiveData<Map<String, Integer>> _pantryPieData = new MutableLiveData<>();
     public final LiveData<Map<String, Integer>> pantryPieData = _pantryPieData;
 
+    private final MutableLiveData<FilterType> _currentFilter = new MutableLiveData<>(FilterType.DAILY);
+    public final LiveData<FilterType> currentFilter = _currentFilter;
+
     public HomeViewModel(@NonNull Application application, @NonNull SavedStateHandle savedStateHandle) {
         super(application);
         repo = new StepRepository(application);
-        userId = savedStateHandle.get("userId");
 
+        // --- DÜZELTME 1: UserID'yi doğrudan Firebase'den alıyoruz ---
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user != null) {
+            userId = user.getUid();
+        } else {
+            userId = "";
+        }
+
+        // İlk açılışta verileri yükle
         loadStepsData(FilterType.DAILY);
         loadPantryData();
     }
 
+    // --- DÜZELTME 2: Sayfaya her dönüldüğünde çağrılacak metod ---
+    public void refresh() {
+        if (_currentFilter.getValue() != null) {
+            loadStepsData(_currentFilter.getValue());
+            loadPantryData();
+        }
+    }
+
     public void setFilter(FilterType type) {
+        _currentFilter.setValue(type);
         loadStepsData(type);
     }
 
     private void loadStepsData(FilterType type) {
+        if (userId == null || userId.isEmpty()) return;
+
         Calendar calendar = Calendar.getInstance();
         long endTime = calendar.getTimeInMillis();
         long startTime = 0;
 
+        // Günü sıfırla
         calendar.set(Calendar.HOUR_OF_DAY, 0);
         calendar.set(Calendar.MINUTE, 0);
         calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
 
         if (type == FilterType.DAILY) {
             startTime = calendar.getTimeInMillis();
         } else if (type == FilterType.WEEKLY) {
-            calendar.add(Calendar.DAY_OF_YEAR, -7);
+            calendar.add(Calendar.DAY_OF_YEAR, -6);
             startTime = calendar.getTimeInMillis();
         } else if (type == FilterType.MONTHLY) {
-            calendar.add(Calendar.DAY_OF_YEAR, -30);
+            calendar.add(Calendar.DAY_OF_YEAR, -29);
             startTime = calendar.getTimeInMillis();
         }
 
@@ -72,8 +98,8 @@ public class HomeViewModel extends AndroidViewModel {
         Map<Integer, Integer> aggregatedData = new HashMap<>();
         Calendar cal = Calendar.getInstance();
 
+        // Gelen verileri topla (Aggregation)
         for (Step step : steps) {
-            // DÜZELTME: getTimestamp() kullanıldı
             cal.setTimeInMillis(step.getTimestamp());
             int key;
 
@@ -83,7 +109,7 @@ public class HomeViewModel extends AndroidViewModel {
                 key = cal.get(Calendar.DAY_OF_YEAR);
             }
 
-            // DÜZELTME: getSteps() kullanıldı
+            // Aynı saat/gün için birden fazla kayıt varsa üstüne ekle (Toplama işlemi)
             aggregatedData.put(key, aggregatedData.getOrDefault(key, 0) + step.getSteps());
         }
 
@@ -96,6 +122,8 @@ public class HomeViewModel extends AndroidViewModel {
     }
 
     private void loadPantryData() {
+        if (userId == null || userId.isEmpty()) return;
+
         repo.getAllPantryItemsUser(userId).observeForever(items -> {
             Map<String, Integer> categoryCounts = new HashMap<>();
             if (items != null) {

@@ -58,27 +58,6 @@
                       </LayoutPositions>
                     </value>
                   </entry>
-                  <entry key="navigation_pantry">
-                    <value>
-                      <LayoutPositions>
-                        <option name="myPosition">
-                          <Point>
-                            <option name="x" value="256" />
-                            <option name="y" value="12" />
-                          </Point>
-                        </option>
-                        <option name="myPositions">
-                          <map>
-                            <entry key="action_pantryFragment_to_pantryListFragment">
-                              <value>
-                                <LayoutPositions />
-                              </value>
-                            </entry>
-                          </map>
-                        </option>
-                      </LayoutPositions>
-                    </value>
-                  </entry>
                   <entry key="navigation_profile">
                     <value>
                       <LayoutPositions>
@@ -124,6 +103,27 @@
                       </LayoutPositions>
                     </value>
                   </entry>
+                  <entry key="onboardingActivityFragment">
+                    <value>
+                      <LayoutPositions>
+                        <option name="myPosition">
+                          <Point>
+                            <option name="x" value="12" />
+                            <option name="y" value="12" />
+                          </Point>
+                        </option>
+                        <option name="myPositions">
+                          <map>
+                            <entry key="action_activity_to_goal">
+                              <value>
+                                <LayoutPositions />
+                              </value>
+                            </entry>
+                          </map>
+                        </option>
+                      </LayoutPositions>
+                    </value>
+                  </entry>
                   <entry key="onboardingAllergiesFragment">
                     <value>
                       <LayoutPositions>
@@ -156,7 +156,7 @@
                         </option>
                         <option name="myPositions">
                           <map>
-                            <entry key="action_diet_to_goal">
+                            <entry key="action_diet_to_activity">
                               <value>
                                 <LayoutPositions />
                               </value>
@@ -199,6 +199,27 @@
                         <option name="myPositions">
                           <map>
                             <entry key="action_info_to_allergies">
+                              <value>
+                                <LayoutPositions />
+                              </value>
+                            </entry>
+                          </map>
+                        </option>
+                      </LayoutPositions>
+                    </value>
+                  </entry>
+                  <entry key="pantryFragment">
+                    <value>
+                      <LayoutPositions>
+                        <option name="myPosition">
+                          <Point>
+                            <option name="x" value="12" />
+                            <option name="y" value="12" />
+                          </Point>
+                        </option>
+                        <option name="myPositions">
+                          <map>
+                            <entry key="action_pantryFragment_to_pantryListFragment">
                               <value>
                                 <LayoutPositions />
                               </value>

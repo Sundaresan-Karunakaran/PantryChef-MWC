@@ -2,52 +2,37 @@
 <com.google.android.material.card.MaterialCardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_margin="8dp"
-    app:cardElevation="4dp"
-    app:cardCornerRadius="12dp">
+    app:cardCornerRadius="12dp"
+    app:cardElevation="4dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="16dp">
 
-        <!-- 1. The Image Slot -->
         <ImageView
             android:id="@+id/category_image"
-            android:layout_width="match_parent"
-            android:layout_height="120dp"
-            android:scaleType="fitCenter"
-            tools:src="@drawable/ic_launcher_background"
-            android:contentDescription="@string/category_image_desc"
-        /> <!-- Remember to add string resources -->
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:contentDescription="Category Icon"
 
-        <!-- 2. The Header and Subhead -->
-        <LinearLayout
-            android:layout_width="match_parent"
+            app:tint="?attr/colorOnSurface" />
+
+        <TextView
+            android:id="@+id/category_name"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="16dp">
-
-            <TextView
-                android:id="@+id/category_name"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textAppearance="?attr/textAppearanceTitleMedium"
-                tools:text="Dairy &amp; Eggs" />
-
-            <TextView
-                android:id="@+id/category_subhead"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:text="Tap to show more"
-                android:textAppearance="?attr/textAppearanceBodyMedium"
-                android:textColor="?android:attr/textColorSecondary" />
-
-        </LinearLayout>
+            android:layout_marginTop="8dp"
+            android:text="Category Name"
+            android:textAlignment="center"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="?attr/colorOnSurface" />
 
     </LinearLayout>
 

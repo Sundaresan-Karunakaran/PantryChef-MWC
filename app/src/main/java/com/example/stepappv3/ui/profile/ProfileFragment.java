@@ -39,11 +39,13 @@ public class ProfileFragment extends Fragment {
 
     // UI Elemanları
     private ShapeableImageView profileImage;
-    private TextView textName, textHeight, textWeight, textAge, textGoal, textDiet, textAllergies;
+    // --- YENİ ALAN: textActivityLevel eklendi ---
+    private TextView textName, textHeight, textWeight, textAge, textGoal, textDiet, textAllergies, textActivityLevel;
     private MaterialButton btnSettings, btnLogout;
 
     // Tıklanabilir Kartlar
-    private View cardDiet, cardAllergies;
+    // --- YENİ ALAN: cardActivityLevel eklendi ---
+    private View cardDiet, cardAllergies, cardActivityLevel;
 
     // Fotoğraf Seçici
     private ActivityResultLauncher<Intent> photoPickerLauncher;
@@ -52,6 +54,9 @@ public class ProfileFragment extends Fragment {
     private final String[] DIET_OPTIONS = {"None (Omnivore)", "Vegan", "Vegetarian", "Pescatarian", "Keto"};
     private final String[] GOAL_OPTIONS = {"Lose Weight", "Maintain Weight", "Gain Weight"};
     private final String[] ALLERGY_OPTIONS = {"Gluten", "Nuts", "Lactose", "Soy", "Seafood", "Egg"};
+    // --- YENİ LİSTE: Aktivite Seviyesi Seçenekleri ---
+    private final String[] ACTIVITY_OPTIONS = {"Sedentary", "Light", "Moderate", "Active"};
+
 
     // Anlık veriyi tutmak için
     private UserProfile currentUserProfile;
@@ -95,10 +100,12 @@ public class ProfileFragment extends Fragment {
 
         textDiet = view.findViewById(R.id.textDiet);
         textAllergies = view.findViewById(R.id.textAllergies);
+        textActivityLevel = view.findViewById(R.id.textActivityLevel); // YENİ EŞLEŞTİRME
 
         // Ayrı Kartlar
         cardDiet = view.findViewById(R.id.cardDiet);
         cardAllergies = view.findViewById(R.id.cardAllergies);
+        cardActivityLevel = view.findViewById(R.id.cardActivityLevel); // YENİ EŞLEŞTİRME
 
         btnSettings = view.findViewById(R.id.btnSettings);
         btnLogout = view.findViewById(R.id.btnLogout);
@@ -122,6 +129,9 @@ public class ProfileFragment extends Fragment {
 
         textGoal.setText(profile.goal != null ? profile.goal : "-");
         textDiet.setText(profile.dietType != null ? profile.dietType : "None");
+
+        // --- YENİ ALAN: Activity Level'ı göster ---
+        textActivityLevel.setText(profile.activityLevel != null ? profile.activityLevel : "-");
 
         textAllergies.setText((profile.allergies != null && !profile.allergies.isEmpty()) ? profile.allergies : "None");
     }
@@ -147,15 +157,19 @@ public class ProfileFragment extends Fragment {
         cardDiet.setOnClickListener(v ->
                 showSingleChoiceDialog("Select Diet Type", "dietType", DIET_OPTIONS, textDiet.getText().toString()));
 
+        // --- YENİ TIKLAMA: ACTIVITY LEVEL KARTI -> Tekli Seçim ---
+        cardActivityLevel.setOnClickListener(v ->
+                showSingleChoiceDialog("Select Activity Level", "activityLevel", ACTIVITY_OPTIONS, textActivityLevel.getText().toString()));
+
+
         // 2. ALLERGIES KARTI -> Çoklu Seçim
         cardAllergies.setOnClickListener(v ->
                 showAllergiesDialog());
 
         // --- BUTONLAR ---
 
-        // SETTINGS -> Yeni sayfaya git (DÜZELTİLEN KISIM)
+        // SETTINGS -> Yeni sayfaya git
         btnSettings.setOnClickListener(v -> {
-            // Action yerine direkt ID kullanıyoruz
             Navigation.findNavController(v).navigate(R.id.nav_settings_page);
         });
 
@@ -169,7 +183,8 @@ public class ProfileFragment extends Fragment {
     private void showSingleChoiceDialog(String title, String fieldName, String[] options, String currentValue) {
         int checkedItem = -1;
         for (int i = 0; i < options.length; i++) {
-            if (options[i].equals(currentValue)) {
+            // Küçük/büyük harf duyarlılığı olmadan kontrol
+            if (options[i].equalsIgnoreCase(currentValue)) {
                 checkedItem = i;
                 break;
             }

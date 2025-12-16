@@ -30,7 +30,6 @@ public class OnboardingDietFragment extends Fragment {
         chipGroup = view.findViewById(R.id.chipGroupDiet);
 
         MaterialButton next = view.findViewById(R.id.btnNext);
-        // Skip butonu tanımlaması SİLİNDİ
 
         next.setOnClickListener(v -> {
             int id = chipGroup.getCheckedChipId();
@@ -38,9 +37,8 @@ public class OnboardingDietFragment extends Fragment {
                 Chip chip = view.findViewById(id);
                 viewModel.tempProfile.dietType = chip.getText().toString();
             }
-            Navigation.findNavController(v).navigate(R.id.action_diet_to_goal);
+            // DÜZELTME BURADA: action_diet_to_goal yerine action_diet_to_activity
+            Navigation.findNavController(v).navigate(R.id.action_diet_to_activity);
         });
-
-        // Skip listener SİLİNDİ
     }
 }

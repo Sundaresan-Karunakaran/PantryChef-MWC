@@ -6,92 +6,77 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
-import androidx.lifecycle.SavedStateHandle;
-import androidx.lifecycle.Transformations;
 
 import com.example.stepappv3.database.StepRepository;
 import com.example.stepappv3.database.steps.Step;
-
-import java.util.Calendar;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 public class StepViewModel extends AndroidViewModel {
 
-    // 1. SAYAÇ DURUMU (Sensör çalışıyor mu?)
+    private final StepRepository repository;
+    private String userId;
+
+    private final MutableLiveData<Integer> _steps = new MutableLiveData<>(0);
+    public final LiveData<Integer> steps = _steps;
+
     private final MutableLiveData<Boolean> _isCounting = new MutableLiveData<>(false);
     public final LiveData<Boolean> isCounting = _isCounting;
 
-    // 2. OTURUM DURUMU (Start'a basıldı mı?) - YENİ EKLENDİ
-    // Bu false ise ekranda Büyük Start butonu olur.
-    // Bu true ise ekranda Stop/Finish butonları olur.
     private final MutableLiveData<Boolean> _isSessionActive = new MutableLiveData<>(false);
     public final LiveData<Boolean> isSessionActive = _isSessionActive;
 
-    // Adım sayısı
-    private final MutableLiveData<Integer> _steps = new MutableLiveData<>(0);
-    public final LiveData<Integer> steps;
-
-    private StepRepository repo;
-    private final String userId;
-
-    private StepRepository getRepo() {
-        if (repo == null) {
-            repo = new StepRepository(getApplication());
-        }
-        return repo;
-    }
-
-    public StepViewModel(@NonNull Application application, @NonNull SavedStateHandle savedStateHandle) {
+    public StepViewModel(@NonNull Application application) {
         super(application);
+        repository = new StepRepository(application);
 
-        Calendar calendar = Calendar.getInstance();
-        calendar.set(Calendar.HOUR_OF_DAY, 0);
-        calendar.set(Calendar.MINUTE, 0);
-        calendar.set(Calendar.SECOND, 0);
-        long startOfTodayTimestamp = calendar.getTimeInMillis();
-
-        String uid = savedStateHandle.get("userId");
-        this.userId = (uid != null) ? uid : "";
-
-        LiveData<Integer> rawStepsToday = getRepo().getDailyStepsUser(startOfTodayTimestamp, this.userId);
-        steps = Transformations.map(rawStepsToday, total -> total == null ? 0 : total);
-
-        // Uygulama ilk açıldığında eğer zaten adım varsa bile Session kapalı başlasın istiyoruz.
-        // Ancak kullanıcı uygulamayı yanlışlıkla kapatıp açarsa kaldığı yeri görmek isteyebilir.
-        // Sizin isteğiniz "İlk sadece start olsun" olduğu için varsayılan false bırakıyoruz.
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user != null) {
+            userId = user.getUid();
+        } else {
+            userId = ""; // Boş ise hata vermesin diye
+        }
     }
 
-    // BAŞLAT (START)
     public void startCounting() {
-        _isSessionActive.setValue(true); // Oturumu aktif et (Butonlar değişsin)
-        _isCounting.setValue(true);      // Saymayı başlat
+        _isSessionActive.setValue(true);
+        _isCounting.setValue(true);
     }
 
-    // DURAKLAT / DEVAM ET (STOP / RESUME)
     public void togglePause() {
-        boolean currentState = Boolean.TRUE.equals(_isCounting.getValue());
-        _isCounting.setValue(!currentState);
-        // Session active kalmaya devam eder, sadece sayma durur.
-    }
-
-    // KAYDET VE BİTİR
-    public void finishAndSave() {
-        _isCounting.setValue(false);
-        _isSessionActive.setValue(false); // Oturumu kapat (Başa dön)
-        // Veriler veritabanında kalır.
-    }
-
-    // SİL VE BİTİR
-    public void finishAndDiscard() {
-        _isCounting.setValue(false);
-        _isSessionActive.setValue(false); // Oturumu kapat (Başa dön)
-        getRepo().deleteAllUser(this.userId); // Veriyi sil
-        _steps.setValue(0);
+        Boolean current = _isCounting.getValue();
+        _isCounting.setValue(current == null || !current);
     }
 
     public void onCountClicked() {
         if (Boolean.TRUE.equals(_isCounting.getValue())) {
-            Step newStep = new Step(System.currentTimeMillis(), 1, this.userId);
-            getRepo().insert(newStep);
+            Integer current = _steps.getValue();
+            _steps.postValue(current == null ? 1 : current + 1);
         }
+    }
+
+    public void finishAndSave() {
+        Integer currentSteps = _steps.getValue();
+
+        if (currentSteps != null && currentSteps > 0 && userId != null && !userId.isEmpty()) {
+            // --- DÜZELTME BURADA ---
+            // Step constructor'ı artık 3 parametre istiyor: (timestamp, steps, userId)
+            // UserId'yi constructor içine ekledik.
+            Step step = new Step(System.currentTimeMillis(), currentSteps, userId);
+
+            repository.insert(step);
+        }
+
+        resetSession();
+    }
+
+    public void finishAndDiscard() {
+        resetSession();
+    }
+
+    private void resetSession() {
+        _steps.setValue(0);
+        _isCounting.setValue(false);
+        _isSessionActive.setValue(false);
     }
 }

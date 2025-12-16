@@ -13,6 +13,7 @@ public class UserProfile {
     public String allergies; // "Gluten, Nuts" gibi
     public String dietType;  // "Vegan"
     public String goal;      // "Lose Weight"
+    public String activityLevel;
 
     // 1. ZORUNLU: Firebase için Boş Constructor
     public UserProfile() {

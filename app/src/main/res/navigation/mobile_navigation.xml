@@ -57,8 +57,20 @@
         android:name="com.example.stepappv3.ui.onboarding.OnboardingDietFragment"
         android:label="Diet"
         tools:layout="@layout/fragment_onboarding_diet">
+
         <action
-            android:id="@+id/action_diet_to_goal"
+            android:id="@+id/action_diet_to_activity"
+            app:destination="@id/onboardingActivityFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/onboardingActivityFragment"
+        android:name="com.example.stepappv3.ui.onboarding.OnboardingActivityFragment"
+        android:label="Activity Level"
+        tools:layout="@layout/fragment_onboarding_activity">
+
+        <action
+            android:id="@+id/action_activity_to_goal"
             app:destination="@id/onboardingGoalFragment" />
     </fragment>
 

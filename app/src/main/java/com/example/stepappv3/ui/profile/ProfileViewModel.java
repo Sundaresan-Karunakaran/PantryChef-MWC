@@ -33,4 +33,5 @@ public class ProfileViewModel extends AndroidViewModel {
             repository.updateUserField(currentUserId, fieldName, value);
         }
     }
+
 }
