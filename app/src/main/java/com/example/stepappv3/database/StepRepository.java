@@ -2,33 +2,48 @@ package com.example.stepappv3.database;
 
 import android.app.Application;
 import android.os.Looper;
+
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
+// Adım veritabanı sınıfları
 import com.example.stepappv3.database.steps.Step;
 import com.example.stepappv3.database.steps.StepDao;
+
+// Kiler veritabanı sınıfları
 import com.example.stepappv3.database.pantry.PantryDao;
 import com.example.stepappv3.database.pantry.PantryItem;
+
+// Tarif veritabanı sınıfları
+import com.example.stepappv3.database.recipes.Recipe;
+import com.example.stepappv3.database.recipes.RecipeDao;
+
+// DÜZELTİLEN KISIM: UserProfile doğru paketten çekiliyor (profile -> user)
 import com.example.stepappv3.database.user.UserProfile;
 
+// Firebase
 import com.google.firebase.firestore.FirebaseFirestore;
+
 import java.util.List;
 
 public class StepRepository {
+
     private final StepDao stepDao;
     private final PantryDao pantryDao;
+    private final RecipeDao recipeDao;
     private final FirebaseFirestore firestore;
 
     public StepRepository(Application application) {
         StepDatabase db = StepDatabase.getDatabase(application);
         stepDao = db.stepDao();
         pantryDao = db.pantryDao();
+        recipeDao = db.recipeDao(); // Tarif DAO'su (Eğer StepDatabase içinde tanımlıysa)
 
         firestore = FirebaseFirestore.getInstance();
     }
 
     // ==========================================
-    // 1. FIREBASE PROFIL METODLARI
+    // 1. KULLANICI PROFİLİ (FIREBASE FIRESTORE)
     // ==========================================
 
     public void saveUserProfile(UserProfile profile) {
@@ -37,22 +52,17 @@ public class StepRepository {
         }
     }
 
-    // --- DEĞİŞİKLİK BURADA: ANLIK GÜNCELLEME İÇİN LISTENER EKLENDİ ---
     public LiveData<UserProfile> getUserProfile(String userId) {
         MutableLiveData<UserProfile> profileData = new MutableLiveData<>();
 
-        // .get() YERİNE .addSnapshotListener() KULLANIYORUZ
-        // Bu sayede veri değiştiği an (update edildiğinde) burası otomatik çalışır ve UI güncellenir.
         firestore.collection("users").document(userId)
                 .addSnapshotListener((documentSnapshot, e) -> {
                     if (e != null) {
-                        // Hata varsa null dönebiliriz veya loglayabiliriz
                         profileData.setValue(null);
                         return;
                     }
 
                     if (documentSnapshot != null && documentSnapshot.exists()) {
-                        // Veri değişti! Yeni veriyi hemen ekrana yolla
                         UserProfile profile = documentSnapshot.toObject(UserProfile.class);
                         profileData.setValue(profile);
                     } else {
@@ -62,14 +72,11 @@ public class StepRepository {
 
         return profileData;
     }
-    // -----------------------------------------------------------------
 
-    // TEK BİR ALANI GÜNCELLEME
     public void updateUserField(String userId, String fieldName, Object value) {
         if (userId != null) {
             firestore.collection("users").document(userId)
                     .update(fieldName, value);
-            // Başarılı olduğunda Listener zaten tetikleneceği için ekstra bir şey yapmaya gerek yok.
         }
     }
 
@@ -118,11 +125,27 @@ public class StepRepository {
         StepDatabase.databaseWriteExecutor.execute(() -> pantryDao.insert(item));
     }
 
+    public void updatePantryItem(PantryItem item) {
+        StepDatabase.databaseWriteExecutor.execute(() -> pantryDao.update(item));
+    }
+
     public LiveData<List<PantryItem>> getItemsByCategoryUser(String category, String userId) {
         return pantryDao.getItemsByCategoryUser(category, userId);
     }
 
     public LiveData<List<PantryItem>> getAllPantryItemsUser(String userId) {
         return pantryDao.getAllItemsUser(userId);
+    }
+
+    // ==========================================
+    // 4. TARİF (RECIPE) METODLARI (ROOM)
+    // ==========================================
+
+    public LiveData<List<Recipe>> getAllRecipes(){
+        return recipeDao.getAllRecipes();
+    }
+
+    public LiveData<Recipe> getRecipeById(int recipeId) {
+        return recipeDao.getRecipeById(recipeId);
     }
 }

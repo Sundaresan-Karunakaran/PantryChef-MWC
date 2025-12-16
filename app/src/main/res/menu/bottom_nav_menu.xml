@@ -9,12 +9,17 @@
     <item
         android:id="@+id/navigation_step"
         android:icon="@drawable/ic_steps"
-        android:title="Step" />
+        android:title="Steps" />
 
     <item
-        android:id="@+id/navigation_pantry"
+        android:id="@+id/pantryFragment"
         android:icon="@drawable/ic_fridge"
         android:title="Pantry" />
+
+    <item
+        android:id="@+id/navigation_recommendations"
+        android:icon="@drawable/ic_recommendation"
+        android:title="Recipes" />
 
     <item
         android:id="@+id/navigation_profile"

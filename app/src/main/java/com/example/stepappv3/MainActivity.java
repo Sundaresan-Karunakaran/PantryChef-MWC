@@ -69,7 +69,7 @@ public class MainActivity extends AppCompatActivity {
             return insets;
         });
         android.view.Menu menu = navView.getMenu();
-        android.view.MenuItem pantryItem = menu.findItem(R.id.navigation_pantry);
+        android.view.MenuItem pantryItem = menu.findItem(R.id.pantryFragment);
 
         android.text.SpannableString spanString = new android.text.SpannableString(pantryItem.getTitle());
         spanString.setSpan(new android.text.style.StyleSpan(android.graphics.Typeface.BOLD), 0, spanString.length(), 0);

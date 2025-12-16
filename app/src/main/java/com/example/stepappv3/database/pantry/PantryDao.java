@@ -5,7 +5,7 @@ import androidx.room.Dao;
 import androidx.room.Insert;
 import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
-import androidx.room.Update;
+import androidx.room.Update; // Import eklendi
 
 import java.util.List;
 
@@ -14,6 +14,10 @@ public interface PantryDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insert(PantryItem pantryItem);
+
+    // DÜZELTME: Bu metod EKLENDİ (Hatayı çözen kısım)
+    @Update
+    void update(PantryItem item);
 
     @Query("UPDATE pantry_items SET name = :name , category = :category,quantity = :quantity, unit = :unit WHERE id = :id AND userId = :userId")
     void updateForUser(int id, String userId, String name, String category, int quantity, String unit);
