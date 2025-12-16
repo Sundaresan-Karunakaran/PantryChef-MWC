@@ -58,21 +58,4 @@
         </RadioGroup>
     </com.google.android.material.card.MaterialCardView>
 
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"/>
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnDeleteAccount"
-        style="@style/Widget.Material3.Button.TonalButton"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Delete Account"
-        android:textColor="?attr/colorError"
-        app:backgroundTint="?attr/colorSurface"
-        app:strokeColor="?attr/colorError"
-        app:strokeWidth="1dp"
-        app:icon="@drawable/ic_logout"
-        app:iconTint="?attr/colorError"/>
 </LinearLayout>
