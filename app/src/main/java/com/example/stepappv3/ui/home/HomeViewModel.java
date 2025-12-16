@@ -5,99 +5,105 @@ import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
-import androidx.lifecycle.Transformations;
-import com.example.stepappv3.database.steps.Step;
+import androidx.lifecycle.SavedStateHandle;
+
 import com.example.stepappv3.database.StepRepository;
-import com.example.stepappv3.login.FirebaseUserLiveData;
-import com.google.firebase.auth.FirebaseUser;
+import com.example.stepappv3.database.pantry.PantryItem;
+import com.example.stepappv3.database.steps.Step;
+import com.github.mikephil.charting.data.BarEntry;
+
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class HomeViewModel extends AndroidViewModel {
 
-    // For the counting state
-    private final MutableLiveData<Boolean> _isCounting = new MutableLiveData<>(false);
-    public final LiveData<Boolean> isCounting = _isCounting;
+    public enum FilterType { DAILY, WEEKLY, MONTHLY }
 
-    private static final int DAILY_STEP_GOAL = 100;
     private final StepRepository repo;
+    private final String userId;
 
-    // These fields will now be populated reactively.
-    public final LiveData<Integer> steps;
-    public final LiveData<Integer> progressPercentage;
+    private final MutableLiveData<List<BarEntry>> _stepsGraphData = new MutableLiveData<>();
+    public final LiveData<List<BarEntry>> stepsGraphData = _stepsGraphData;
 
-    // We will get the userId from the user LiveData stream.
-    private String userId;
+    private final MutableLiveData<Map<String, Integer>> _pantryPieData = new MutableLiveData<>();
+    public final LiveData<Map<String, Integer>> pantryPieData = _pantryPieData;
 
-    public HomeViewModel(@NonNull Application application) {
+    public HomeViewModel(@NonNull Application application, @NonNull SavedStateHandle savedStateHandle) {
         super(application);
-        this.repo = new StepRepository(application);
+        repo = new StepRepository(application);
+        userId = savedStateHandle.get("userId");
 
-        // 1. Get the single source of truth for the user's authentication state.
-        FirebaseUserLiveData userLiveData = new FirebaseUserLiveData();
-
-        // 2. Use Transformations.switchMap to create a chain.
-        //    When the user logs in, we "switch" to observing the database query.
-        LiveData<Integer> rawStepsData = Transformations.switchMap(userLiveData, user -> {
-            if (user != null) {
-                // User is logged in. Store their ID for use in other methods.
-                this.userId = user.getUid();
-
-                // Calculate the timestamp for the start of today.
-                Calendar calendar = Calendar.getInstance();
-                calendar.set(Calendar.HOUR_OF_DAY, 0);
-                calendar.set(Calendar.MINUTE, 0);
-                calendar.set(Calendar.SECOND, 0);
-                long startOfTodayTimestamp = calendar.getTimeInMillis();
-
-                // Return the LiveData stream from the repository. This is the "switch".
-                return repo.getDailyStepsUser(startOfTodayTimestamp, this.userId);
-            } else {
-                // User is logged out. Clear the userId and return a LiveData holding null.
-                this.userId = null;
-                return new MutableLiveData<>(null);
-            }
-        });
-
-        // 3. Create the FINAL, public `steps` LiveData by transforming the raw data.
-        //    This map's ONLY job is to convert a null from the database into a 0 for the UI.
-        this.steps = Transformations.map(rawStepsData, stepCount -> {
-            if (stepCount == null) {
-                return 0; // If the database returns null (no steps), we tell the UI it's 0.
-            }
-            return stepCount; // Otherwise, pass the real value through.
-        });
-
-
-        // 3. The progressPercentage transformation remains the same.
-        //    It will now correctly react to changes in the new `steps` LiveData.
-        this.progressPercentage = Transformations.map(this.steps, stepCount -> {
-            if (stepCount == null) return 0;
-            if (stepCount >= DAILY_STEP_GOAL) {
-                return 100;
-            } else {
-                return (stepCount * 100) / DAILY_STEP_GOAL;
-            }
-        });
+        loadStepsData(FilterType.DAILY);
+        loadPantryData();
     }
 
-    // The rest of your methods are fine, but they must use the reactive userId field.
-    // Make sure they check if userId is not null before using.
-
-    public void onStartStopClicked() {
-        _isCounting.setValue(!Boolean.TRUE.equals(_isCounting.getValue()));
+    public void setFilter(FilterType type) {
+        loadStepsData(type);
     }
 
-    public void onResetClicked() {
-        _isCounting.setValue(false);
-        if (userId != null) {
-            repo.deleteAllUser(this.userId);
+    private void loadStepsData(FilterType type) {
+        Calendar calendar = Calendar.getInstance();
+        long endTime = calendar.getTimeInMillis();
+        long startTime = 0;
+
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+
+        if (type == FilterType.DAILY) {
+            startTime = calendar.getTimeInMillis();
+        } else if (type == FilterType.WEEKLY) {
+            calendar.add(Calendar.DAY_OF_YEAR, -7);
+            startTime = calendar.getTimeInMillis();
+        } else if (type == FilterType.MONTHLY) {
+            calendar.add(Calendar.DAY_OF_YEAR, -30);
+            startTime = calendar.getTimeInMillis();
         }
+
+        repo.getStepsRangeUser(startTime, endTime, userId, (List<Step> steps) -> {
+            processStepsForGraph(steps, type);
+        });
     }
 
-    public void onCountClicked() {
-        if (Boolean.TRUE.equals(_isCounting.getValue()) && userId != null) {
-            Step newStep = new Step(System.currentTimeMillis(), 1, this.userId);
-            repo.insert(newStep);
+    private void processStepsForGraph(List<Step> steps, FilterType type) {
+        Map<Integer, Integer> aggregatedData = new HashMap<>();
+        Calendar cal = Calendar.getInstance();
+
+        for (Step step : steps) {
+            // DÜZELTME: getTimestamp() kullanıldı
+            cal.setTimeInMillis(step.getTimestamp());
+            int key;
+
+            if (type == FilterType.DAILY) {
+                key = cal.get(Calendar.HOUR_OF_DAY);
+            } else {
+                key = cal.get(Calendar.DAY_OF_YEAR);
+            }
+
+            // DÜZELTME: getSteps() kullanıldı
+            aggregatedData.put(key, aggregatedData.getOrDefault(key, 0) + step.getSteps());
         }
+
+        List<BarEntry> entries = new ArrayList<>();
+        for (Map.Entry<Integer, Integer> entry : aggregatedData.entrySet()) {
+            entries.add(new BarEntry(entry.getKey(), entry.getValue()));
+        }
+
+        _stepsGraphData.postValue(entries);
+    }
+
+    private void loadPantryData() {
+        repo.getAllPantryItemsUser(userId).observeForever(items -> {
+            Map<String, Integer> categoryCounts = new HashMap<>();
+            if (items != null) {
+                for (PantryItem item : items) {
+                    categoryCounts.put(item.category, categoryCounts.getOrDefault(item.category, 0) + 1);
+                }
+            }
+            _pantryPieData.setValue(categoryCounts);
+        });
     }
 }

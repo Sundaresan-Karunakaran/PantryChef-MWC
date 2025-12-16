@@ -18,9 +18,8 @@ public class DataLoadingManager {
 
     private DataLoadingManager(Context context) {
         sharedPreferences = context.getApplicationContext().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-        // Initialize LiveData with the persisted value.
         boolean isLoaded = sharedPreferences.getBoolean(KEY_IS_DATA_LOADED, false);
-        _isDataReady.setValue(isLoaded);
+        _isDataReady.postValue(isLoaded);
     }
 
     public static DataLoadingManager getInstance(Context context) {
@@ -34,8 +33,13 @@ public class DataLoadingManager {
         return instance;
     }
 
+    // --- BU METOD EKSİKTİ, EKLENDİ ---
+    public boolean isDataLoadingComplete() {
+        return sharedPreferences.getBoolean(KEY_IS_DATA_LOADED, false);
+    }
+
     public void setDataLoadingComplete() {
-        if (Boolean.FALSE.equals(_isDataReady.getValue())) {
+        if (!isDataLoadingComplete()) {
             sharedPreferences.edit().putBoolean(KEY_IS_DATA_LOADED, true).apply();
             _isDataReady.postValue(true);
         }

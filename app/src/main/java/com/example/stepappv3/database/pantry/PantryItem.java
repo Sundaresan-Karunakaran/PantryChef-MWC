@@ -5,9 +5,11 @@ import androidx.room.Ignore;
 import androidx.room.Index;
 import androidx.room.PrimaryKey;
 
-import org.jspecify.annotations.NonNull;
+// DÜZELTME BURADA: org.jspecify yerine androidx.annotation kullanmalısınız.
+// Room, NOT NULL kısıtlamasını bu paketle tanır.
+import androidx.annotation.NonNull;
 
-@Entity(tableName = "pantry_items",indices = {@Index(value = "userId")})
+@Entity(tableName = "pantry_items", indices = {@Index(value = "userId")})
 public class PantryItem {
 
     @PrimaryKey(autoGenerate = true)
@@ -17,19 +19,18 @@ public class PantryItem {
     public String category;
     public int quantity;
     public String unit;
+
     @NonNull
     public String userId;
 
-    // Room needs a public constructor
     public PantryItem(String name, String category, int quantity, String unit, @NonNull String userId) {
         this.name = name;
         this.category = category;
         this.quantity = quantity;
         this.unit = unit;
         this.userId = userId;
-
-
     }
+
     @Ignore
     public PantryItem(){
     }

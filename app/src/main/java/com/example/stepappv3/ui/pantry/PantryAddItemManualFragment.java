@@ -32,8 +32,6 @@ public class PantryAddItemManualFragment extends DialogFragment {
     private AutoCompleteTextView unitAutoComplete;
     private Button cancelButton;
     private Button saveButton;
-    private boolean isEditMode = false;
-    private int editingItemId = -1;
 
     @Nullable
     @Override
@@ -62,7 +60,6 @@ public class PantryAddItemManualFragment extends DialogFragment {
         setupCategoryDropdown();
         setupUnitDropdown();
         setupClickListeners();
-        checkForEditMode();
     }
 
     private void setupCategoryDropdown() {
@@ -143,40 +140,15 @@ public class PantryAddItemManualFragment extends DialogFragment {
         String currentUserId = pantryViewModel.getUserId();
         // --- Save the Item ---
         // Create the new PantryItem object.
-        if (isEditMode) {
+        PantryItem newItem = new PantryItem(name, category, quantity, unit,currentUserId);
 
-            PantryItem updatedItem = new PantryItem(name, category, quantity, unit, currentUserId);
-            updatedItem.id = editingItemId;
-            PantryListViewModel listViewModel = new ViewModelProvider(requireParentFragment()).get(PantryListViewModel.class);
-            listViewModel.updatePantryItem(updatedItem);
-            Toast.makeText(getContext(), name + " updated", Toast.LENGTH_SHORT).show();
-        } else {
-            PantryItem newItem = new PantryItem(name, category, quantity, unit, currentUserId);
-            pantryViewModel.insertPantryItem(newItem);
-            Toast.makeText(getContext(), name + " added to pantry", Toast.LENGTH_SHORT).show();
-        }
+        // Command the ViewModel to insert the new item.
+        pantryViewModel.insertPantryItem(newItem);
+
+        // Show a confirmation message.
+        Toast.makeText(getContext(), name + " added to pantry", Toast.LENGTH_SHORT).show();
+
+        // Close the dialog.
         dismiss();
-    }
-
-    private void checkForEditMode() {        Bundle args = getArguments();
-        if (args != null) {
-            // If arguments exist, we are in "Edit Mode".
-            isEditMode = true;
-            editingItemId = args.getInt("ITEM_ID", -1);
-
-            // Pre-fill the form with the existing item's data.
-            nameEditText.setText(args.getString("ITEM_NAME"));
-            quantityEditText.setText(String.valueOf(args.getInt("ITEM_QUANTITY")));
-
-            // For AutoCompleteTextView, we must set the text and also show it.
-            String unit = args.getString("ITEM_UNIT");
-            unitAutoComplete.setText(unit, false);
-
-            String category = args.getString("ITEM_CATEGORY");
-            categoryAutoComplete.setText(category, false);
-
-            // We don't pre-fill the category because the user might want to change it,
-            // and the dropdown will be populated by the ViewModel.
-        }
     }
 }

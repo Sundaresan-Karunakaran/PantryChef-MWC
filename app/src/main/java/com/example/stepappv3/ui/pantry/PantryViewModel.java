@@ -2,6 +2,7 @@ package com.example.stepappv3.ui.pantry;
 
 import android.app.Application;
 import android.graphics.Bitmap;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
@@ -54,7 +55,7 @@ public class PantryViewModel extends AndroidViewModel {
     private GeminiReceiptParser getParser() {
         if (geminiParser == null) {
             // TODO: Replace "YOUR_API_KEY" with a key stored securely, e.g., in BuildConfig
-            geminiParser = new GeminiReceiptParser("AIzaSyBCFFLcxRgR-THgdo5sn0leuIJq_Mk3toc");
+            geminiParser = new GeminiReceiptParser("mwc");
         }
         return geminiParser;
     }
@@ -72,6 +73,7 @@ public class PantryViewModel extends AndroidViewModel {
                 // An error occurred
                 _errorMessage.postValue(new Event<>("Error parsing receipt: " + throwable.getMessage()));
             }
+            Log.d("ReceiptParser", "Result: " + result.toString());
 
             switch (result.status) {
                 case SUCCESS:

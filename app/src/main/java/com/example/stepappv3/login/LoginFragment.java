@@ -11,39 +11,37 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.navigation.NavDirections;
+import androidx.navigation.NavController; // EKLENDİ
+import androidx.navigation.Navigation;    // EKLENDİ
 
 import com.example.stepappv3.R;
+import com.example.stepappv3.database.StepRepository;
 import com.google.android.gms.common.SignInButton;
+import com.google.firebase.auth.FirebaseUser; // EKLENDİ
 
 public class LoginFragment extends Fragment {
 
-    // Declare member fields for the views and logic components
     private LoginViewModel loginViewModel;
     private SignInButton googleSignInButton;
     private ProgressBar loginProgressBar;
 
-    // This is the modern replacement for onActivityResult, used to handle the sign-in result.
     private ActivityResultLauncher<android.content.Intent> signInLauncher;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Get a reference to the ViewModel
         loginViewModel = new ViewModelProvider(this).get(LoginViewModel.class);
 
-        // This sets up the contract for what to do when the sign-in flow returns a result.
         signInLauncher = registerForActivityResult(
                 new com.firebase.ui.auth.FirebaseAuthUIActivityResultContract(),
-                (result) -> { /* This is now intentionally empty */ }
+                (result) -> { /* Boş kalabilir, ViewModel durumu zaten dinliyor */ }
         );
     }
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        // This method's only job is to create the view hierarchy from your XML file.
         return inflater.inflate(R.layout.fragment_login, container, false);
     }
 
@@ -51,59 +49,66 @@ public class LoginFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // Find the views from the layout
         googleSignInButton = view.findViewById(R.id.google_sign_in_button);
         loginProgressBar = view.findViewById(R.id.login_progress_bar);
 
-        // Set up the listener for the sign-in button
         googleSignInButton.setOnClickListener(v -> {
-
             loginProgressBar.setVisibility(View.VISIBLE);
-            // This is the list of providers you want to support. For now, just Google.
             java.util.List<com.firebase.ui.auth.AuthUI.IdpConfig> providers = java.util.Collections.singletonList(
                     new com.firebase.ui.auth.AuthUI.IdpConfig.GoogleBuilder().build());
 
-            // Create the sign-in intent using the FirebaseUI library.
             android.content.Intent signInIntent = com.firebase.ui.auth.AuthUI.getInstance()
                     .createSignInIntentBuilder()
                     .setAvailableProviders(providers)
                     .build();
 
-            // Launch the sign-in flow. The result will be handled by the launcher we defined in onCreate.
             signInLauncher.launch(signInIntent);
         });
 
-        // Set up the observer for the authentication state
+        // --- GÜNCELLENEN KISIM ---
         loginViewModel.authenticationState.observe(getViewLifecycleOwner(), state -> {
-            if (state == AuthenticationState.AUTHENTICATED) {
-                loginProgressBar.setVisibility(View.VISIBLE);
-                googleSignInButton.setEnabled(false);
-            } else {
-
-                loginProgressBar.setVisibility(View.GONE);
-                googleSignInButton.setEnabled(true);
+            switch (state) {
+                case AUTHENTICATED:
+                    FirebaseUser currentUser = loginViewModel.user.getValue();
+                    if (currentUser != null) {
+                        // DÜZELTME BURADA: Direkt gitmek yerine kontrol metodunu çağırıyoruz
+                        checkUserProfileAndNavigate(currentUser);
+                    }
+                    break;
+                case IN_PROGRESS:
+                    loginProgressBar.setVisibility(View.VISIBLE);
+                    googleSignInButton.setEnabled(false);
+                    break;
+                case UNAUTHENTICATED:
+                    loginProgressBar.setVisibility(View.GONE);
+                    googleSignInButton.setEnabled(true);
+                    break;
             }
         });
+    }
 
-        // OBSERVER 2: This new observer handles the NAVIGATION decision.
-        // It will only fire after a user logs in and the database check is complete.
-        loginViewModel.userProfile.observe(getViewLifecycleOwner(), profile -> {
+    // Profil kontrolü ve yönlendirme mantığı
+    private void checkUserProfileAndNavigate(FirebaseUser user) {
+        if (user == null) return;
 
-            if (loginViewModel.authenticationState.getValue() != AuthenticationState.AUTHENTICATED) {
-                return;
-            }
+        StepRepository repo = new StepRepository(requireActivity().getApplication());
 
-            if (profile != null) {
+        // Veritabanını kontrol et: Profil var mı?
+        repo.getUserProfile(user.getUid()).observe(getViewLifecycleOwner(), profile -> {
+            // Gözlemciyi kaldır ki döngüye girmesin (önemli!)
+            repo.getUserProfile(user.getUid()).removeObservers(getViewLifecycleOwner());
 
-                String userId = profile.userId;
-                NavDirections action =
-                        LoginFragmentDirections.actionLoginFragmentToNavigationHome();
-                androidx.navigation.Navigation.findNavController(view).navigate(action);
+            NavController navController = Navigation.findNavController(requireView());
+
+            if (profile == null) {
+                // Profil yok -> İlk kez giriyor -> ONBOARDING'e git
+                navController.navigate(R.id.action_loginFragment_to_onboardingInfoFragment);
             } else {
-
-                NavDirections action =
-                        LoginFragmentDirections.actionLoginFragmentToProfileSetupFragment();
-                androidx.navigation.Navigation.findNavController(view).navigate(action);
+                // Profil var -> Normal akış -> HOME'a git
+                // HomeFragment userId beklediği için Bundle ile gönderiyoruz
+                Bundle args = new Bundle();
+                args.putString("userId", user.getUid());
+                navController.navigate(R.id.action_loginFragment_to_homeFragment, args);
             }
         });
     }

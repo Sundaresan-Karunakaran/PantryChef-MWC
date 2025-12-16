@@ -4,11 +4,7 @@ import android.app.Application;
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
-import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Transformations;
-
-import com.example.stepappv3.database.StepRepository;
-import com.example.stepappv3.database.profile.UserProfile;
 import com.google.firebase.auth.FirebaseUser;
 
 public class LoginViewModel extends AndroidViewModel {
@@ -18,17 +14,14 @@ public class LoginViewModel extends AndroidViewModel {
 
     // This LiveData simply transforms the user object into the state for the UI.
     public final LiveData<AuthenticationState> authenticationState;
-    public final StepRepository repository;
-    public final LiveData<UserProfile> userProfile;
-
 
     public LoginViewModel(@NonNull Application application) {
         super(application);
 
         // 1. Get the live stream of the Firebase user.
         this.user = new FirebaseUserLiveData();
-        this.repository = new StepRepository(application);
 
+        // 2. Transform the user LiveData into the AuthenticationState LiveData.
         this.authenticationState = Transformations.map(this.user, user -> {
             if (user != null) {
                 // If the user object exists, the state is AUTHENTICATED.
@@ -36,15 +29,6 @@ public class LoginViewModel extends AndroidViewModel {
             } else {
                 // If the user object is null, the state is UNAUTHENTICATED.
                 return AuthenticationState.UNAUTHENTICATED;
-            }
-        });
-        this.userProfile = Transformations.switchMap(this.user, user -> {
-            if (user != null) {
-                // If the user is logged in, "switch" to observing the user's profile from the database.
-                return repository.getUserProfile(user.getUid());
-            } else {
-                // If the user is logged out, return a LiveData that holds null.
-                return new MutableLiveData<>(null);
             }
         });
     }

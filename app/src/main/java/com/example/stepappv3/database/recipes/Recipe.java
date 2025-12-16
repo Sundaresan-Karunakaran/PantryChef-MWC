@@ -2,10 +2,8 @@ package com.example.stepappv3.database.recipes;
 
 import androidx.room.Entity;
 import androidx.room.Ignore;
-import androidx.room.Index;
 import androidx.room.PrimaryKey;
 
-import org.jspecify.annotations.NonNull;
 @Entity(tableName = "recipes")
 public class Recipe {
 
@@ -23,7 +21,14 @@ public class Recipe {
     public String servingSize;
     public String ingredients;
 
-    public Recipe(int recipeId,String name, String servingSize, int serving,String steps,String ingredients ,String missingNutrients,double calories,double sugar,double fat,double fiber){
+    // Room bu boş constructor'ı kullanacak (Bu yüzden @Ignore yok)
+    public Recipe() {
+    }
+
+    // --- DÜZELTME: @Ignore EKLENDİ ---
+    // Room bu constructor'ı görmezden gelecek, bunu biz CSV okurken kullanacağız.
+    @Ignore
+    public Recipe(int recipeId, String name, String servingSize, int serving, String steps, String ingredients, String missingNutrients, double calories, double sugar, double fat, double fiber){
         this.recipeId = recipeId;
         this.name = name;
         this.steps = steps;

@@ -4,26 +4,26 @@
     <item
         android:id="@+id/navigation_home"
         android:icon="@drawable/ic_home"
-    android:title="Home" />
+        android:title="Home" />
 
     <item
-        android:id="@+id/navigation_profile"
-        android:icon="@drawable/ic_profile"
-    android:title="Profile" />
+        android:id="@+id/navigation_step"
+        android:icon="@drawable/ic_steps"
+        android:title="Steps" />
 
     <item
-        android:id="@+id/navigation_notification"
-        android:icon="@drawable/ic_notification"
-        android:title="Notification" />
-
-    <item
-        android:id="@+id/navigation_pantry"
+        android:id="@+id/pantryFragment"
         android:icon="@drawable/ic_fridge"
         android:title="Pantry" />
+
     <item
         android:id="@+id/navigation_recommendations"
         android:icon="@drawable/ic_recommendation"
         android:title="Recipes" />
 
+    <item
+        android:id="@+id/navigation_profile"
+        android:icon="@drawable/ic_profile"
+        android:title="Profile" />
+
 </menu>
-    
