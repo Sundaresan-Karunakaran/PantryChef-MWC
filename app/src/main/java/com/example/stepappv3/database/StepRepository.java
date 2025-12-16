@@ -145,11 +145,11 @@ public class StepRepository {
 
     // Arkadaşınızın kullandığı, RecipeIngredientInfo tipini döndüren metot.
     // Bu, liste ekranı için optimize edilmiş (daha az veri içeren) bir model olabilir.
-    public LiveData<List<RecipeIngredientInfo>> getAllRecipes(){
-        return recipeDao.getRecipeIngredientInfoList();
-    }
 
     public LiveData<Recipe> getRecipeById(int recipeId) {
         return recipeDao.getRecipeById(recipeId);
+    }
+    public List<RecipeIngredientInfo> getAllRecipesSynchronous() {
+        return recipeDao.getRecipeIngredientInfoListSynchronous();
     }
 }

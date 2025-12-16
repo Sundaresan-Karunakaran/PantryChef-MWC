@@ -1,13 +1,12 @@
 package com.example.stepappv3.ui.recipes;
 
 import android.os.Bundle;
-import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-// Toolbar başlığını değiştirmek için import ekledik
-import com.google.android.material.appbar.CollapsingToolbarLayout;
+import android.widget.Toast;
+import com.google.android.material.button.MaterialButton;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -17,13 +16,16 @@ import androidx.lifecycle.ViewModelProvider;
 import com.example.stepappv3.R;
 import com.example.stepappv3.database.recipes.Recipe;
 
+import com.example.stepappv3.ui.recipes.RecipeDetailViewModel;
+
 public class RecipeDetailFragment extends Fragment {
 
     private RecipeDetailViewModel mViewModel;
-    // ID'yi ViewModel otomatik aldığı için buradaki int recipeId'ye aslında gerek yoktu ama dursun.
 
     // UI Bileşenleri
-    private CollapsingToolbarLayout collapsingToolbar; // Başlık için
+    // Yeni eklenen başlık TextView'ı
+    private TextView recipeTitleTextView;
+
     private TextView ingredientsTextView;
     private TextView instructionsTextView;
     private TextView caloriesTextView;
@@ -31,9 +33,13 @@ public class RecipeDetailFragment extends Fragment {
     private TextView sugarTextView;
     private TextView fiberTextView;
 
+    // YENİ UI Bileşenleri
+    private MaterialButton btnCookedYes;
+    private MaterialButton btnCookedNo;
+    private TextView textCookedStatusMessage;
+
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
-                             @Nullable Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_recipe_detail, container, false);
     }
 
@@ -41,35 +47,62 @@ public class RecipeDetailFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // --- DÜZELTME 1: ID'LER XML İLE EŞLEŞTİRİLDİ ---
+        // --- ID EŞLEŞTİRMELERİ ---
+        recipeTitleTextView = view.findViewById(R.id.recipe_title_textview); // YENİ EŞLEŞTİRME
 
-        // İsim için ayrı bir TextView yok, CollapsingToolbarLayout başlığını kullanacağız
-        collapsingToolbar = view.findViewById(R.id.collapsing_toolbar);
+        ingredientsTextView = view.findViewById(R.id.ingredients_textview);
+        instructionsTextView = view.findViewById(R.id.steps_textview);
+        caloriesTextView = view.findViewById(R.id.calories_textview);
+        fatTextView = view.findViewById(R.id.fat_textview);
+        sugarTextView = view.findViewById(R.id.sugar_textview);
+        fiberTextView = view.findViewById(R.id.fiber_textview);
 
-        ingredientsTextView = view.findViewById(R.id.ingredients_textview); // recipe_detail_ingredients YERİNE
-        instructionsTextView = view.findViewById(R.id.steps_textview);      // recipe_detail_instructions YERİNE
-        caloriesTextView = view.findViewById(R.id.calories_textview);       // recipe_detail_calories YERİNE
-        fatTextView = view.findViewById(R.id.fat_textview);                 // recipe_detail_fat YERİNE
-        sugarTextView = view.findViewById(R.id.sugar_textview);             // recipe_detail_sugar YERİNE
-        fiberTextView = view.findViewById(R.id.fiber_textview);             // recipe_detail_fiber YERİNE
+        // YENİ BUTONLAR VE DURUM
+        btnCookedYes = view.findViewById(R.id.btn_cooked_yes);
+        btnCookedNo = view.findViewById(R.id.btn_cooked_no);
+        textCookedStatusMessage = view.findViewById(R.id.text_cooked_status_message);
 
         mViewModel = new ViewModelProvider(this).get(RecipeDetailViewModel.class);
 
-        // --- DÜZELTME 2: VIEWMODEL KULLANIMI ---
-        // mViewModel.getRecipe(id) YERİNE mViewModel.recipe değişkenini izliyoruz.
-        // ViewModel, ID'yi "SavedStateHandle" üzerinden otomatik aldı.
         mViewModel.recipe.observe(getViewLifecycleOwner(), recipe -> {
             if (recipe != null) {
                 bindRecipeData(recipe);
             }
         });
+
+        setupClickListeners();
     }
 
-    private void bindRecipeData(Recipe recipe) {
-        // İsmi Toolbar başlığına yazıyoruz
-        if (collapsingToolbar != null) {
-            collapsingToolbar.setTitle(recipe.name);
+    private void setupClickListeners() {
+        btnCookedYes.setOnClickListener(v -> {
+
+            showStatus(true);
+        });
+
+        btnCookedNo.setOnClickListener(v -> {
+            showStatus(false);
+        });
+    }
+
+    private void showStatus(boolean cooked) {
+        if (cooked) {
+            textCookedStatusMessage.setText("Marked as cooked!");
+            textCookedStatusMessage.setVisibility(View.VISIBLE);
+            btnCookedYes.setEnabled(false);
+            btnCookedNo.setEnabled(true);
+        } else {
+            textCookedStatusMessage.setText("Status reset.");
+            textCookedStatusMessage.setVisibility(View.VISIBLE);
+            btnCookedYes.setEnabled(true);
+            btnCookedNo.setEnabled(false);
         }
+        Toast.makeText(getContext(), cooked ? "Recipe marked as cooked!" : "Status reset.", Toast.LENGTH_SHORT).show();
+    }
+
+
+    private void bindRecipeData(Recipe recipe) {
+        // --- BAŞLIK EKLEME ---
+        recipeTitleTextView.setText(recipe.name);
 
         if (recipe.ingredients != null) {
             ingredientsTextView.setText(recipe.ingredients);

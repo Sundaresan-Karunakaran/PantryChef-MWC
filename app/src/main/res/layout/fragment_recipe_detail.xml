@@ -1,175 +1,192 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout
+<androidx.core.widget.NestedScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fitsSystemWindows="true"
+    android:fillViewport="true"
     tools:context=".ui.recipes.RecipeDetailFragment">
 
-    <!-- The App Bar is the container for the toolbar that will collapse. -->
-    <com.google.android.material.appbar.AppBarLayout
-        android:id="@+id/app_bar"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="250dp"
-        android:fitsSystemWindows="true"
-        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
 
-        <!-- The CollapsingToolbarLayout allows the toolbar to expand and collapse. -->
-        <com.google.android.material.appbar.CollapsingToolbarLayout
-            android:id="@+id/collapsing_toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:fitsSystemWindows="true"
-            app:contentScrim="?attr/colorPrimary"
-            app:layout_scrollFlags="scroll|exitUntilCollapsed|snap">
-
-            <!-- This is where a large image of the recipe will go. -->
-            <ImageView
-                android:id="@+id/recipe_image"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:fitsSystemWindows="true"
-                android:scaleType="centerCrop"
-                app:layout_collapseMode="parallax"
-                tools:src="@tools:sample/backgrounds/scenic"
-                android:contentDescription="Image of the recipe" />
-
-            <!-- The MaterialToolbar is the standard toolbar that will be visible when collapsed. -->
-            <com.google.android.material.appbar.MaterialToolbar
-                android:id="@+id/toolbar"
-                android:layout_width="match_parent"
-                android:layout_height="?attr/actionBarSize"
-                app:layout_collapseMode="pin"
-                app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
-
-        </com.google.android.material.appbar.CollapsingToolbarLayout>
-    </com.google.android.material.appbar.AppBarLayout>
-
-    <!--
-        The NestedScrollView is critical. It's a special ScrollView that knows how
-        to communicate with the AppBarLayout to create the scrolling effect.
-    -->
-    <androidx.core.widget.NestedScrollView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior">
-
-        <!-- This LinearLayout will stack our content cards vertically. -->
-        <LinearLayout
+        <TextView
+            android:id="@+id/recipe_title_textview"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="16dp">
+            android:textAppearance="?attr/textAppearanceHeadlineMedium"
+            android:textStyle="bold"
+            android:layout_marginBottom="16dp"
+            tools:text="Classic Pancakes" />
 
-            <!-- Card for Nutritional Information -->
-            <com.google.android.material.card.MaterialCardView
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:cardElevation="2dp"
+            app:cardUseCompatPadding="true">
+
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:cardElevation="2dp"
-                app:cardUseCompatPadding="true">
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Nutritional Facts"
+                    android:textAppearance="?attr/textAppearanceTitleMedium" />
+
+                <TextView
+                    android:id="@+id/calories_textview"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    tools:text="Calories: 350" />
+
+                <TextView
+                    android:id="@+id/fat_textview"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    tools:text="Fat: 15g" />
+
+                <TextView
+                    android:id="@+id/sugar_textview"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    tools:text="Sugar: 20g" />
+
+                <TextView
+                    android:id="@+id/fiber_textview"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    tools:text="Fiber: 5g" />
+
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:cardElevation="2dp"
+            app:cardUseCompatPadding="true">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Ingredients"
+                    android:textAppearance="?attr/textAppearanceTitleMedium" />
+
+                <TextView
+                    android:id="@+id/ingredients_textview"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:lineSpacingMultiplier="1.2"
+                    tools:text="• 1 cup flour\n• 2 tbsp sugar\n• 1 large egg" />
+
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:cardElevation="2dp"
+            app:cardUseCompatPadding="true">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Instructions"
+                    android:textAppearance="?attr/textAppearanceTitleMedium" />
+
+                <TextView
+                    android:id="@+id/steps_textview"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:lineSpacingMultiplier="1.4"
+                    tools:text="1. Mix dry ingredients...\n2. Whisk in egg and milk...\n3. Cook on preheated griddle..." />
+
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/card_cooked_status"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:cardElevation="2dp"
+            app:cardUseCompatPadding="true"
+            android:layout_marginTop="8dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:id="@+id/text_cooked_question"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Did you cook this recipe?"
+                    android:textAppearance="?attr/textAppearanceTitleMedium"
+                    android:layout_marginBottom="12dp" />
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="16dp">
+                    android:orientation="horizontal">
 
-                    <TextView
-                        android:layout_width="wrap_content"
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_cooked_yes"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:text="Nutritional Facts"
-                        android:textAppearance="?attr/textAppearanceTitleMedium" />
+                        android:layout_weight="1"
+                        android:layout_marginEnd="8dp"
+                        android:text="Yes, Cooked"
+                        style="@style/Widget.Material3.Button.TonalButton"
+                        app:backgroundTint="?attr/colorPrimary"
+                        android:textColor="@android:color/white"/>
 
-                    <TextView
-                        android:id="@+id/calories_textview"
-                        android:layout_width="wrap_content"
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_cooked_no"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        tools:text="Calories: 350" />
-
-                    <TextView
-                        android:id="@+id/fat_textview"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        tools:text="Fat: 15g" />
-
-                    <TextView
-                        android:id="@+id/sugar_textview"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        tools:text="Sugar: 20g" />
-
-                    <TextView
-                        android:id="@+id/fiber_textview"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        tools:text="Fiber: 5g" />
+                        android:layout_weight="1"
+                        android:text="Not Yet"
+                        style="@style/Widget.Material3.Button.OutlinedButton"
+                        app:strokeColor="?attr/colorOutline"/>
 
                 </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
 
-            <!-- Card for Ingredients -->
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:cardElevation="2dp"
-                app:cardUseCompatPadding="true">
-
-                <LinearLayout
+                <TextView
+                    android:id="@+id/text_cooked_status_message"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="16dp">
+                    android:layout_marginTop="12dp"
+                    android:gravity="center"
+                    android:visibility="gone"
+                    tools:text="Marked as cooked on 16 Dec."/>
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Ingredients"
-                        android:textAppearance="?attr/textAppearanceTitleMedium" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
 
-                    <TextView
-                        android:id="@+id/ingredients_textview"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:lineSpacingMultiplier="1.2"
-                        tools:text="• 1 cup flour\n• 2 tbsp sugar\n• 1 large egg" />
-
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
-
-            <!-- Card for Instructions -->
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:cardElevation="2dp"
-                app:cardUseCompatPadding="true">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="16dp">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Instructions"
-                        android:textAppearance="?attr/textAppearanceTitleMedium" />
-
-                    <TextView
-                        android:id="@+id/steps_textview"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:lineSpacingMultiplier="1.4"
-                        tools:text="1. Mix dry ingredients...\n2. Whisk in egg and milk...\n3. Cook on preheated griddle..." />
-
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
-
-        </LinearLayout>
-    </androidx.core.widget.NestedScrollView>
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>
