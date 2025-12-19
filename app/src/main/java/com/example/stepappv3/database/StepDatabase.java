@@ -16,10 +16,14 @@ import androidx.room.RoomDatabase;
 import androidx.room.migration.Migration;
 import androidx.sqlite.db.SupportSQLiteDatabase;
 
+import com.example.stepappv3.database.ingredient.MasterIngredient;
+import com.example.stepappv3.database.ingredient.MasterIngredientDao;
 import com.example.stepappv3.database.profile.UserProfile;
 import com.example.stepappv3.database.profile.UserProfileDao;
 import com.example.stepappv3.database.recipes.Recipe;
 import com.example.stepappv3.database.recipes.RecipeDao;
+import com.example.stepappv3.database.recipes.RecipeIngredientJoin;
+import com.example.stepappv3.database.recipes.RecipeIngredientJoinDao;
 import com.example.stepappv3.database.steps.Step;
 import com.example.stepappv3.database.steps.StepDao;
 import com.example.stepappv3.database.pantry.PantryDao;
@@ -27,19 +31,23 @@ import com.example.stepappv3.database.pantry.PantryItem;
 import com.example.stepappv3.util.DataLoadingManager;
 
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.regex.Pattern;
 
-@Database(entities = {Step.class,PantryItem.class,Recipe.class, UserProfile.class}, version = 5, exportSchema = false)
+@Database(entities = {Step.class,PantryItem.class,Recipe.class, UserProfile.class, MasterIngredient.class, RecipeIngredientJoin.class}, version = 7, exportSchema = false)
 public abstract class StepDatabase extends RoomDatabase {
     public abstract StepDao stepDao();
     public abstract PantryDao pantryDao();
     public abstract RecipeDao recipeDao();
     public abstract UserProfileDao userProfileDao();
-
-
-
+    public abstract MasterIngredientDao masterIngredientDao();
+    public abstract RecipeIngredientJoinDao recipeIngredientJoinDao();
 
 
     static final Migration MIGRATION_1_2 = new Migration(1, 2) {
@@ -47,7 +55,6 @@ public abstract class StepDatabase extends RoomDatabase {
         public void migrate(@NonNull SupportSQLiteDatabase database) {
             database.execSQL(
                     "CREATE TABLE IF NOT EXISTS `pantry_items` (" +
-                            "`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
                             "`name` TEXT, " +
                             "`category` TEXT, " +
                             "`quantity` INTEGER NOT NULL, " +
@@ -77,7 +84,7 @@ public abstract class StepDatabase extends RoomDatabase {
                     "CREATE TABLE IF NOT EXISTS `recipes` ( " +
                             "`recipeId` INTEGER PRIMARY KEY NOT NULL, " +
                             "`name` TEXT, `servingSize` TEXT, `servings` INTEGER NOT NULL, " +
-                            "`steps` TEXT, `ingredients` TEXT, `missingNutrients` TEXT, " +
+                            "`steps` TEXT,`quants_g` TEXT, `ingredients` TEXT, `missingNutrients` TEXT, " +
                             "`calories` REAL NOT NULL, `totalFat` REAL NOT NULL, " +
                             "`totalSugars` REAL NOT NULL, `dietaryFiber` REAL NOT NULL)"
             );
@@ -100,74 +107,213 @@ public abstract class StepDatabase extends RoomDatabase {
         }
     };
 
+    static final Migration MIGRATION_5_6 = new Migration(5,6) {
+
+        @Override
+        public void migrate(@NonNull SupportSQLiteDatabase database) {
+            database.execSQL("CREATE TABLE IF NOT EXISTS `master_ingredient` (" +
+                    "`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                    "`name` TEXT NOT NULL UNIQUE, " +
+                    "`synonyms` TEXT)"
+            );
+        }
+    };
+
+    static final Migration MIGRATION_6_7 = new Migration(6,7) {
+        @Override
+        public void migrate(@NonNull SupportSQLiteDatabase database){
+            database.execSQL("CREATE TABLE IF NOT EXISTS `recipe_ingredient_join` (" +
+                    "`recipeId` INTEGER NOT NULL, " +
+                    "`masterIngredientId` INTEGER NOT NULL, " +
+                    "PRIMARY KEY(`recipeId`, `masterIngredientId`), " +
+                    "FOREIGN KEY(`masterIngredientId`) REFERENCES `master_ingredient`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE, " +
+                    "FOREIGN KEY(`recipeId`) REFERENCES `recipes`(`recipeId`) ON UPDATE NO ACTION ON DELETE CASCADE)"
+            );
+        }
+    };
+
     private static RoomDatabase.Callback sRoomDatabaseCallback(final Context context) {
         return new RoomDatabase.Callback() {
             @Override
             public void onCreate(@NonNull SupportSQLiteDatabase db) {
                 super.onCreate(db);
-                // THE FIX: Delegate the heavy parsing work to our background executor.
                 databaseWriteExecutor.execute(() -> {
-                    // This code block will now run safely on a background thread.
+                    parseIngredientsFromCsv(context);
                     parseRecipesFromCsv(context);
+                    parseRecipeIngredientJoinsFromCsv(context);
                     DataLoadingManager.getInstance(context).setDataLoadingComplete();
                 });
             }
         };
     }
 
-    private static void parseRecipesFromCsv(Context context) {
-        RecipeDao dao = instance.recipeDao();
-        final java.util.regex.Pattern csvSplitPattern = java.util.regex.Pattern.compile(",(?=([^\"]*\"[^\"]*\")*[^\"]*$)");
+    private static void parseIngredientsFromCsv(Context context) {
+        instance.runInTransaction(() -> {
+            MasterIngredientDao dao = instance.masterIngredientDao();
 
-        try (java.io.BufferedReader reader = new java.io.BufferedReader(
-                new java.io.InputStreamReader(context.getAssets().open("final_recipes.csv")))) {
-            String line;
-            boolean isFirstLine = true;
-            List<Recipe> recipeList = new java.util.ArrayList<>();
-            Log.d("DatabaseSetup", "Starting to parse recipes from CSV.");
+            try (java.io.BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(context.getAssets().open("ingredients.csv")))) {
+                String line;
+                boolean isFirstLine = true;
+                Log.d("DatabaseSetup", "Starting to parse ingredients from CSV.");
+                List<MasterIngredient> allIngredients = new ArrayList<>();
 
-            while ((line = reader.readLine()) != null) {
-                if (isFirstLine) {
-                    isFirstLine = false;
-                    continue;
-                }
+                while ((line = reader.readLine()) != null) {
+                    if (isFirstLine) {
+                        isFirstLine = false;
+                        continue;
+                    }
 
-                String[] tokens = csvSplitPattern.split(line);
+                    try{
+                        MasterIngredient ingredient = new MasterIngredient(line.trim());
+                        allIngredients.add(ingredient);
 
-                if (tokens.length == 11) {
-                    // We moved the NumberFormatException catch outside to handle any parsing failure in the line.
-                    try {
-                        Recipe recipe = new com.example.stepappv3.database.recipes.Recipe(
-                                safeParseInt(unquoter(tokens[0])),      // recipeId
-                                unquoter(tokens[1]),                     // name
-                                unquoter(tokens[2]),                     // servingSize
-                                safeParseInt(unquoter(tokens[3])),     // servings
-                                unquoter(tokens[4]),                     // steps
-                                unquoter(tokens[5]),                     // ingredients
-                                unquoter(tokens[6]),                     // missingNutrients
-                                safeParseDouble(unquoter(tokens[7])),  // calories
-                                safeParseDouble(unquoter(tokens[8])),  // totalFat
-                                safeParseDouble(unquoter(tokens[9])),  // totalSugars
-                                safeParseDouble(unquoter(tokens[10])) // dietaryFiber
-                        );
-                        recipeList.add(recipe);
-                    } catch (Exception e) { // Catch any unexpected error during row parsing
+                    } catch (Exception e){
                         Log.e("DatabaseSetup", "Skipping malformed line: " + line, e);
                     }
-                } else {
-                    Log.w("DatabaseSetup", "Skipping line with incorrect token count (" + tokens.length + "): " + line);
                 }
+                dao.insertAll(allIngredients);
+                Log.d("DatabaseSetup", "Finished inserting all ingredients.");
+            } catch (java.io.IOException e) {
+                Log.e("DatabaseSetup", "Failed to read CSV file.", e);
             }
-            Log.d("DatabaseSetup", "Finished parsing. Attempting to insert " + recipeList.size() + " recipes.");
-            if (!recipeList.isEmpty()) {
-                dao.insertAllRecipes(recipeList); // Ensure this method name is correct
-                Log.d("DatabaseSetup", "Successfully inserted recipes.");
-            } else {
-                Log.w("DatabaseSetup", "No recipes were parsed to insert.");
+        });
+    }
+
+    private static void parseRecipeIngredientJoinsFromCsv(Context context) {
+
+        final int BATCH_SIZE = 500;
+        instance.runInTransaction(() -> {
+            Log.d("DatabaseSetup", "Starting to build recipe-ingredient joins.");
+            MasterIngredientDao masterDao = instance.masterIngredientDao();
+            RecipeIngredientJoinDao joinDao = instance.recipeIngredientJoinDao();
+
+            List<MasterIngredient> allMasterIngredients = masterDao.getAllMasterIngredients();
+            java.util.Map<String, Integer> ingredientNameToIdMap = new java.util.HashMap<>();
+            for (MasterIngredient ingredient : allMasterIngredients) {
+
+                ingredientNameToIdMap.put(ingredient.name, ingredient.id);
             }
-        } catch (java.io.IOException e) {
-            Log.e("DatabaseSetup", "Failed to read CSV file.", e);
-        }
+            Log.d("DatabaseSetup", "Built in-memory dictionary with " + ingredientNameToIdMap.size() + " ingredients.");
+
+            final Pattern csvSplitPattern = Pattern.compile(",(?=([^\"]*\"[^\"]*\")*[^\"]*$)");
+
+            try (BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(context.getAssets().open("final_recipes.csv")))) {
+                String line;
+                boolean isFirstLine = true;
+                List<RecipeIngredientJoin> joinsToInsert = new java.util.ArrayList<>(BATCH_SIZE);
+                Log.d("DatabaseSetup", "Starting to parse recipes from CSV in batches.");
+
+                while ((line = reader.readLine()) != null) {
+                    if (isFirstLine) {
+                        isFirstLine = false;
+                        continue;
+                    }
+
+                    String[] tokens = csvSplitPattern.split(line);
+                    if (tokens.length == 12) {
+                        try {
+
+                            int recipeId = safeParseInt(unquoter(tokens[0]));
+                            String ingredientsToken = unquoter(tokens[6]);
+                            String cleanedData = ingredientsToken.replace("[", "").replace("]", "").replace("\"", "");
+                            String[] ingredients = cleanedData.split(",");
+                            for (String ingredientName : ingredients) {
+                                String trimmedName = ingredientName.trim();
+                                Integer masterIngredientId = ingredientNameToIdMap.get(trimmedName);
+
+                                if (masterIngredientId != null) {
+                                    joinsToInsert.add(new RecipeIngredientJoin(recipeId, masterIngredientId));
+                                }
+                            }
+                        } catch (Exception e) {
+                            Log.e("DatabaseSetup", "Skipping malformed join line: " + line, e);
+                        }
+                    }
+                    if (joinsToInsert.size() >= BATCH_SIZE){
+                        joinDao.insertAll(joinsToInsert);
+                        Log.d("DatabaseSetup", "Inserting a batch of " + BATCH_SIZE + " joins.");
+                        joinsToInsert.clear();
+                    }
+                }
+
+                if (!joinsToInsert.isEmpty()) {
+                    Log.d("DatabaseSetup", "Inserting final batch of " + joinsToInsert.size() + " recipe-ingredient join records.");
+                    joinDao.insertAll(joinsToInsert);
+                    joinsToInsert.clear();
+                }
+                Log.d("DatabaseSetup", "Finished building recipe-ingredient joins.");
+
+            } catch (java.io.IOException e) {
+                Log.e("DatabaseSetup", "Failed to read recipes CSV for join creation.", e);
+            }
+        });
+    }
+    private static void parseRecipesFromCsv(Context context) {
+
+        final int BATCH_SIZE = 500;
+        instance.runInTransaction(() -> {
+            RecipeDao dao = instance.recipeDao();
+            final Pattern csvSplitPattern = Pattern.compile(",(?=([^\"]*\"[^\"]*\")*[^\"]*$)");
+
+            try (BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(context.getAssets().open("final_recipes.csv")))) {
+                String line;
+                boolean isFirstLine = true;
+                List<Recipe> recipeBatch = new ArrayList<>(BATCH_SIZE);
+                Log.d("DatabaseSetup", "Starting to parse recipes from CSV in batches.");
+
+                while ((line = reader.readLine()) != null) {
+                    if (isFirstLine) {
+                        isFirstLine = false;
+                        continue;
+                    }
+
+                    String[] tokens = csvSplitPattern.split(line);
+                    if (tokens.length == 12) {
+                        try {
+                            Recipe recipe = new Recipe(
+                                    safeParseInt(unquoter(tokens[0])),
+                                    unquoter(tokens[1]),
+                                    unquoter(tokens[2]),
+                                    safeParseInt(unquoter(tokens[3])),
+                                    unquoter(tokens[4]),
+                                    unquoter(tokens[5]),
+                                    unquoter(tokens[6]),
+                                    unquoter(tokens[7]),
+                                    safeParseDouble(unquoter(tokens[8])),
+                                    safeParseDouble(unquoter(tokens[9])),
+                                    safeParseDouble(unquoter(tokens[10])),
+                                    safeParseDouble(unquoter(tokens[11]))
+                            );
+                            recipeBatch.add(recipe);
+
+                            if (recipeBatch.size() == BATCH_SIZE) {
+                                Log.d("DatabaseSetup", "Inserting a batch of " + BATCH_SIZE + " recipes.");
+                                dao.insertAllRecipes(recipeBatch);
+                                recipeBatch.clear();
+                            }
+
+                        } catch (Exception e) {
+                            Log.e("DatabaseSetup", "Skipping malformed line: " + line, e);
+                        }
+                    } else {
+                        Log.w("DatabaseSetup", "Skipping line with incorrect token count (" + tokens.length + "): " + line);
+                    }
+                }
+
+                if (!recipeBatch.isEmpty()) {
+                    Log.d("DatabaseSetup", "Inserting final batch of " + recipeBatch.size() + " recipes.");
+                    dao.insertAllRecipes(recipeBatch);
+                }
+
+                Log.d("DatabaseSetup", "Finished inserting all recipes.");
+
+            } catch (IOException e) {
+                Log.e("DatabaseSetup", "Failed to read CSV file.", e);
+            }
+        });
     }
 
 
@@ -183,7 +329,7 @@ public abstract class StepDatabase extends RoomDatabase {
                         StepDatabase.class,
                         "step_database")
                         .fallbackToDestructiveMigration()
-                        .addMigrations(MIGRATION_1_2, MIGRATION_2_3,MIGRATION_3_4,MIGRATION_4_5)
+                        .addMigrations(MIGRATION_1_2, MIGRATION_2_3,MIGRATION_3_4,MIGRATION_4_5,MIGRATION_5_6,MIGRATION_6_7)
                         .addCallback(sRoomDatabaseCallback(context))
                         .build();
 

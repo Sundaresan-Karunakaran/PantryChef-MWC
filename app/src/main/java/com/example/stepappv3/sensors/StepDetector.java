@@ -43,15 +43,12 @@ public class StepDetector implements SensorEventListener {
                 listener.onStepDetected();
             }
         } else if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
-            // This is our fallback algorithm.
             long currentTimeNs = event.timestamp;
 
-            // Debounce: Only check for a step every quarter of a second
             if (currentTimeNs - lastStepTimeNs < STEP_DELAY_NS) {
                 return;
             }
 
-            // Calculate the magnitude of the acceleration vector
             float x = event.values[0];
             float y = event.values[1];
             float z = event.values[2];

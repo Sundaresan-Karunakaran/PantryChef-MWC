@@ -4,10 +4,16 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ProgressBar;
+import android.widget.TextView;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.constraintlayout.widget.Group;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -22,6 +28,10 @@ public class RecommendationFragment extends Fragment implements RecommendationLi
     private RecyclerView recyclerView;
     private RecommendationListAdapter adapter;
     private View emptyStateLayout;
+    private TextView loadingTextView;
+    private Group loadingGroup;
+
+
 
     @Nullable
     @Override
@@ -33,17 +43,13 @@ public class RecommendationFragment extends Fragment implements RecommendationLi
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // Get an instance of the ViewModel.
-        viewModel = new ViewModelProvider(this).get(RecommendationViewModel.class);
+        viewModel = new ViewModelProvider(requireActivity()).get(RecommendationViewModel.class);
+        loadingGroup = view.findViewById(R.id.loading_group);
 
-        // Find views.
         recyclerView = view.findViewById(R.id.recommendations_recyclerview);
         emptyStateLayout = view.findViewById(R.id.empty_state_layout);
-
-        // Setup RecyclerView.
+        loadingTextView = view.findViewById(R.id.loading_text);
         setupRecyclerView();
-
-        // Setup the observer to listen for data.
         setupObservers();
     }
 
@@ -54,17 +60,29 @@ public class RecommendationFragment extends Fragment implements RecommendationLi
     }
 
     private void setupObservers() {
-        // This is the core of the UI logic.
+        viewModel.isLoading.observe(getViewLifecycleOwner(), isLoading -> {
+            if (isLoading != null && isLoading) {
+                loadingGroup.setVisibility(View.VISIBLE);
+                recyclerView.setVisibility(View.GONE);
+                emptyStateLayout.setVisibility(View.GONE);
+            } else {
+
+                loadingGroup.setVisibility(View.GONE);
+            }
+        });
         viewModel.getRecommendations().observe(getViewLifecycleOwner(), recommendations -> {
-            if (recommendations == null || recommendations.isEmpty()) {
-                // If there are no recommendations, show the empty state message.
+            if (recommendations == null || recommendations.isEmpty() || recommendations.size() == 0) {
                 emptyStateLayout.setVisibility(View.VISIBLE);
                 recyclerView.setVisibility(View.GONE);
             } else {
-                // If we have recommendations, show the list and submit the data to the adapter.
                 emptyStateLayout.setVisibility(View.GONE);
                 recyclerView.setVisibility(View.VISIBLE);
                 adapter.submitList(recommendations);
+            }
+        });
+        viewModel.loadingText.observe(getViewLifecycleOwner(), text -> {
+            if (text != null) {
+                loadingTextView.setText(text);
             }
         });
     }
@@ -77,8 +95,6 @@ public class RecommendationFragment extends Fragment implements RecommendationLi
                         recommendation.recipe.recipeId,
                         recommendation.recipe.name
                 );
-
-        // Find the NavController and execute the navigation.
         androidx.navigation.Navigation.findNavController(requireView()).navigate(action);
     }
 }

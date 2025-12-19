@@ -12,6 +12,14 @@ public class HelperFunctions {
         return text;
     }
 
+    public static String normalize(String s) {
+        return s
+                .toLowerCase()
+                .replace("\"", "")
+                .trim()
+                .replaceAll("\\b(s|es)\\b$", ""); // crude singularization
+    }
+
 // --- NEW HELPER METHODS for Safe Parsing ---
 
     /**

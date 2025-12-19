@@ -62,11 +62,9 @@ public class HomeFragment extends androidx.fragment.app.Fragment {
     private void setupPermissions() {
         requestPermissionLauncher = registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
             if (isGranted) {
-                // The user just granted the permission. Now we can proceed with the action.
                 home.onStartStopClicked();
             } else {
-                // The user denied the permission. It's good practice to explain
-                // why the feature is unavailable.
+
                 Toast.makeText(getContext(), "Permission denied. Step counting cannot start.", Toast.LENGTH_SHORT).show();
             }
         });
@@ -102,26 +100,19 @@ public class HomeFragment extends androidx.fragment.app.Fragment {
         resetButton.setOnClickListener(v -> showResetConfirmationDialog());
 
         startButton.setOnClickListener(v -> {
-            // First, check if we are on Android 10 (Q) or higher.
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
 
-                // Check if we already have the permission.
                 if (ContextCompat.checkSelfPermission(
                         requireContext(),
                         android.Manifest.permission.ACTIVITY_RECOGNITION
                 ) == PackageManager.PERMISSION_GRANTED) {
-                    // Permission is already granted, proceed with the original action.
                     home.onStartStopClicked();
                 } else {
-                    // Permission has not been granted yet. Launch the request.
-                    // The result will be handled by the launcher we registered in onCreate().
+
                     requestPermissionLauncher.launch(android.Manifest.permission.ACTIVITY_RECOGNITION);
                 }
 
             } else {
-                // We are on a device older than Android 10.
-                // The permission is granted at install time if it's in the manifest.
-                // We can proceed directly with the action.
                 home.onStartStopClicked();
             }
         });

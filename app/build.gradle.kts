@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     id("com.google.gms.google-services")
     id("androidx.navigation.safeargs")
+    id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
 }
 
 android {
@@ -16,8 +17,12 @@ android {
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
-
+        val apiKey = project.findProperty("GEMINI_API_KEY")?.toString() ?: ""
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        buildConfigField("String", "GEMINI_API_KEY", "\"${apiKey}\"")
+    }
+    buildFeatures {
+        buildConfig = true
     }
 
     buildTypes {
@@ -49,6 +54,7 @@ dependencies {
     implementation(libs.cardview)
     implementation(libs.generativeai)
     implementation(libs.guavaUtility)
+    implementation(libs.mpandroidchart)
     implementation(platform("com.google.firebase:firebase-bom:34.6.0"))
     implementation("com.google.firebase:firebase-analytics")
     implementation("com.firebaseui:firebase-ui-auth:8.0.2")

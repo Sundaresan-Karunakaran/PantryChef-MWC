@@ -3,11 +3,21 @@ import android.app.Application;
 import android.os.Looper;
 
 import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MediatorLiveData;
 
+import com.example.stepappv3.database.ingredient.MasterIngredient;
+import com.example.stepappv3.database.ingredient.MasterIngredientDao;
+import com.example.stepappv3.database.pantry.PantryItemDisplay;
 import com.example.stepappv3.database.profile.UserProfile;
 import com.example.stepappv3.database.profile.UserProfileDao;
 import com.example.stepappv3.database.recipes.Recipe;
 import com.example.stepappv3.database.recipes.RecipeDao;
+import com.example.stepappv3.database.recipes.RecipeDetailDisplay;
+import com.example.stepappv3.database.recipes.RecipeIngredientInfo;
+import com.example.stepappv3.database.recipes.RecipeIngredientJoin;
+import com.example.stepappv3.database.recipes.RecipeIngredientJoinDao;
+import com.example.stepappv3.database.recipes.RecipeWithIngredients;
+import com.example.stepappv3.database.steps.DailyStep;
 import com.example.stepappv3.database.steps.Step;
 import com.example.stepappv3.database.steps.StepDao;
 import com.example.stepappv3.database.pantry.PantryDao;
@@ -21,6 +31,10 @@ public class StepRepository {
     private final PantryDao pantryDao;
     private final RecipeDao recipeDao;
     private final UserProfileDao userDao;
+    private final MasterIngredientDao masterIngredientDao;
+    private final RecipeIngredientJoinDao recipeIngredientJoinDao;
+
+
 
 
     public StepRepository(Application application) {
@@ -29,33 +43,14 @@ public class StepRepository {
         pantryDao = db.pantryDao();
         recipeDao = db.recipeDao();
         userDao = db.userProfileDao();
+        masterIngredientDao = db.masterIngredientDao();
+        recipeIngredientJoinDao = db.recipeIngredientJoinDao();
     }
 
     public LiveData<Integer> getDailyStepsUser(long sinceTimestamp,String userId){
         return stepDao.getStepsSinceLiveDataUser(sinceTimestamp,userId);
     }
 
-
-    public void getStepsSinceUser(long sinceTimestamp,String userId, final OnDataFetchedCallback callback) {
-        StepDatabase.databaseWriteExecutor.execute(() -> {
-            // This runs on a background thread.
-            final int total = stepDao.getStepsSinceUser(sinceTimestamp,userId);
-
-            // To update the UI, we must post back to the main thread.
-            new android.os.Handler(Looper.getMainLooper()).post(() -> {
-                // This runs on the main UI thread and delivers the result.
-                callback.onDataFetched(total);
-            });
-        });
-    }
-    public void getTotalStepsAsyncUser(String userId,final OnDataFetchedCallback callback){
-        StepDatabase.databaseWriteExecutor.execute(() -> {
-            final int total = stepDao.getTotalStepsAsyncUser(userId);
-            new android.os.Handler(Looper.getMainLooper()).post(() -> {
-                callback.onDataFetched(total);
-            });
-        });
-    }
     public void insert(Step step){
         StepDatabase.databaseWriteExecutor.execute(() -> {
             stepDao.insert(step);
@@ -80,12 +75,12 @@ public class StepRepository {
         });
     }
 
-    public LiveData<List<PantryItem>> getItemsByCategoryUser(String category,String userId) {
+    public LiveData<List<PantryItemDisplay>> getItemsByCategoryUser(String category,String userId) {
         return pantryDao.getItemsByCategoryUser(category,userId);
     }
 
-    public LiveData<List<PantryItem>> getAllPantryItemsUser(String userId) {
-        return pantryDao.getAllItemsUser(userId);
+    public LiveData<List<PantryItemDisplay>> getAllPantryItemsUser(String userId) {
+        return pantryDao.getItemsWithNames(userId);
     }
 
     public void updatePantryItem(PantryItem item) {
@@ -94,16 +89,52 @@ public class StepRepository {
         });
     }
 
-    public LiveData<List<Recipe>> getAllRecipes(){
-        return recipeDao.getAllRecipes();
+    public void insertAllItems(List<PantryItem> items){
+        StepDatabase.databaseWriteExecutor.execute(() -> {
+            pantryDao.insertAll(items);
+        });
     }
 
-    public LiveData<Recipe> getRecipeById(int recipeId) {
-        return recipeDao.getRecipeById(recipeId);
+    public void deleteByIdUser(int itemId,String userId){
+        StepDatabase.databaseWriteExecutor.execute(() -> {
+            pantryDao.deleteByIdUser(itemId,userId);
+        });
     }
 
     public LiveData<UserProfile> getUserProfile(String userId){
         return userDao.getProfile(userId);
+    }
+
+
+    public List<MasterIngredient> getAllMasterIngredients(){
+        return masterIngredientDao.getAllMasterIngredients();
+    }
+
+    public List<MasterIngredient> searchIngredientsByName(String query) {
+        return masterIngredientDao.searchIngredientsByName(query);
+    }
+
+    public LiveData<RecipeDetailDisplay> getRecipeForDetailDisplay(int recipeId){
+        MediatorLiveData<RecipeDetailDisplay> result = new MediatorLiveData<>();
+        LiveData<Recipe> recipe = recipeDao.getRecipeById(recipeId);
+        result.addSource(recipe, recipeValue -> {
+            if (recipeValue == null) return;
+            StepDatabase.databaseWriteExecutor.execute(() ->{
+                List<Integer> ingredientIds = recipeIngredientJoinDao.getIngredientIdsForRecipe(recipeId);
+                List<String> ingredientNames = masterIngredientDao.getNamesbyId(ingredientIds);
+                result.postValue(new RecipeDetailDisplay(recipeValue,ingredientNames));
+            });
+            result.removeSource(recipe);
+        });
+        return result;
+    }
+
+    public List<RecipeWithIngredients> getRecipeWithIngredients(){
+        return recipeDao.getRecipeWithIngredients();
+    }
+
+    public LiveData<List<DailyStep>> getStepsGroupedByDay(String userId){
+        return stepDao.getStepsGroupedByDay(userId);
     }
 
 }

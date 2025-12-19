@@ -1,34 +1,11 @@
-<?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<!-- In: res/layout/fragment_profile.xml -->
+<androidx.core.widget.NestedScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/totalStepsButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Get Total Steps"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.498"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.841" />
-
-    <TextView
-        android:id="@+id/totalStepsView"
-        android:layout_width="77dp"
-        android:layout_height="84dp"
-        android:gravity="center"
-        android:textSize="34sp"
-        app:layout_constraintBottom_toTopOf="@+id/totalStepsButton"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.473"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.713" />
+    android:layout_height="match_parent"
+    tools:context=".ui.profile.ProfileFragment">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -36,147 +13,113 @@
         android:orientation="vertical"
         android:padding="8dp">
 
-        <!-- Card for Steps By Day -->
+        <!-- Card 1: Main User Info -->
         <com.google.android.material.card.MaterialCardView
+            style="?attr/materialCardViewFilledStyle"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="8dp">
+            android:layout_height="wrap_content">
 
-            <androidx.constraintlayout.widget.ConstraintLayout
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:orientation="vertical"
                 android:padding="16dp">
 
                 <TextView
-                    android:id="@+id/title_steps_day"
+                    android:id="@+id/profile_name_textview"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Steps Today"
-                    android:textAppearance="?attr/textAppearanceTitleMedium"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
+                    android:textAppearance="?attr/textAppearanceHeadlineSmall"
+                    tools:text="Anuj K." />
 
                 <TextView
-                    android:id="@+id/steps_day_textview"
+                    android:id="@+id/profile_email_textview"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:textAppearance="?attr/textAppearanceDisplayMedium"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/title_steps_day"
-                    tools:text="10,234" />
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/get_steps_day_button"
-                    style="?attr/materialButtonOutlinedStyle"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Refresh"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
-
-            </androidx.constraintlayout.widget.ConstraintLayout>
-
+                    android:layout_marginTop="4dp"
+                    android:textAppearance="?attr/textAppearanceBodyMedium"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    tools:text="anuj.k@example.com" />
+            </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Card for Steps By Hour -->
+        <!-- Card 2: Biometrics -->
         <com.google.android.material.card.MaterialCardView
+            style="?attr/materialCardViewOutlinedStyle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="8dp">
+            android:layout_marginTop="12dp">
 
-            <androidx.constraintlayout.widget.ConstraintLayout
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:orientation="vertical"
                 android:padding="16dp">
 
                 <TextView
-                    android:id="@+id/title_steps_hour"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Steps This Hour"
-                    android:textAppearance="?attr/textAppearanceTitleMedium"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
+                    android:layout_marginBottom="16dp"
+                    android:drawableStart="@drawable/ic_biometrics"
+                    android:drawablePadding="16dp"
+                    android:gravity="center_vertical"
+                    android:text="Biometrics"
+                    android:textAppearance="?attr/textAppearanceTitleMedium" />
 
                 <TextView
-                    android:id="@+id/steps_hour_textview"
+                    android:id="@+id/profile_details_textview"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:textAppearance="?attr/textAppearanceDisplayMedium"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/title_steps_hour"
-                    tools:text="456" />
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/get_steps_hour_button"
-                    style="?attr/materialButtonOutlinedStyle"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Refresh"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
-
-            </androidx.constraintlayout.widget.ConstraintLayout>
-
+                    android:lineSpacingExtra="6dp"
+                    android:textAppearance="?attr/textAppearanceBodyLarge"
+                    tools:text="Gender: Male\nAge: 28\nWeight: 75.0 kg\nHeight: 180.0 cm" />
+            </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Card for Steps By Minute -->
+        <!-- Card 3: Daily Goals -->
         <com.google.android.material.card.MaterialCardView
+            style="?attr/materialCardViewOutlinedStyle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="8dp">
+            android:layout_marginTop="12dp">
 
-            <androidx.constraintlayout.widget.ConstraintLayout
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:orientation="vertical"
                 android:padding="16dp">
 
                 <TextView
-                    android:id="@+id/title_steps_minute"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Steps This Minute"
-                    android:textAppearance="?attr/textAppearanceTitleMedium"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
+                    android:layout_marginBottom="16dp"
+                    android:drawableStart="@drawable/ic_goals"
+                    android:drawablePadding="16dp"
+                    android:gravity="center_vertical"
+                    android:text="Daily Goals"
+                    android:textAppearance="?attr/textAppearanceTitleMedium" />
 
                 <TextView
-                    android:id="@+id/steps_minute_textview"
+                    android:id="@+id/profile_goals_textview"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:textAppearance="?attr/textAppearanceDisplayMedium"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/title_steps_minute"
-                    tools:text="12" />
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/get_steps_minute_button"
-                    style="?attr/materialButtonOutlinedStyle"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Refresh"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
-
-            </androidx.constraintlayout.widget.ConstraintLayout>
-
+                    android:lineSpacingExtra="6dp"
+                    android:textAppearance="?attr/textAppearanceBodyLarge"
+                    tools:text="Calories: 2500 kcal\nFat: 70 g\nSugar: 50 g" />
+            </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
+
+        <!-- A Button to Log Out -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/logout_button"
+            style="?attr/materialButtonOutlinedStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="24dp"
+            android:text="Log Out"
+            app:icon="@drawable/ic_home" />
 
     </LinearLayout>
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/logout_button"
-        style="?attr/materialButtonOutlinedStyle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="16dp"
-        android:text="Logout"
-        app:icon="@drawable/ic_home"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
-
-</androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.core.widget.NestedScrollView>
+    

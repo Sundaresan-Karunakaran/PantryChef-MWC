@@ -23,6 +23,7 @@ public class MainActivity extends AppCompatActivity {
 
     private FirebaseAuth mFirebaseAuth;
     private FirebaseAuth.AuthStateListener mAuthStateListener;
+    private androidx.navigation.ui.AppBarConfiguration appBarConfiguration;
 
 
     @Override
@@ -34,26 +35,22 @@ public class MainActivity extends AppCompatActivity {
         NavHostFragment navHostFragment = (NavHostFragment) getSupportFragmentManager().findFragmentById(R.id.nav_host_fragment);
         NavController navController = navHostFragment.getNavController();
         NavigationUI.setupWithNavController(navView, navController);
+        appBarConfiguration = new androidx.navigation.ui.AppBarConfiguration.Builder(
+                R.id.navigation_home, R.id.navigation_pantry, R.id.navigation_recommendations)
+                .build();
         mFirebaseAuth = FirebaseAuth.getInstance();
 
         mAuthStateListener = firebaseAuth -> {
             FirebaseUser user = firebaseAuth.getCurrentUser();
             if (user == null) {
-                // USER IS LOGGED OUT!
-                // Immediately navigate back to the login screen and
-                // clear all other screens from the back stack.
 
-                // Create navigation options to clear the entire app state.
-                // This prevents the user from pressing "back" to get into the app.
                 NavOptions navOptions = new NavOptions.Builder()
                         .setPopUpTo(R.id.mobile_navigation, true) // Pops everything off the stack
                         .build();
 
-                // Perform the navigation to the LoginFragment
                 navController.navigate(R.id.loginFragment, null, navOptions);
             }
-            // If user is not null, we don't need to do anything.
-            // The app is in its normal, logged-in state.
+
         };
 
         navController.addOnDestinationChangedListener((controller, destination, arguments) -> {
@@ -89,5 +86,11 @@ public class MainActivity extends AppCompatActivity {
         if (mAuthStateListener != null) {
             mFirebaseAuth.removeAuthStateListener(mAuthStateListener);
         }
+    }
+    @Override
+    public boolean onSupportNavigateUp() {
+        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
+        return androidx.navigation.ui.NavigationUI.navigateUp(navController, appBarConfiguration)
+                || super.onSupportNavigateUp();
     }
 }

@@ -10,18 +10,17 @@ import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 import com.example.stepappv3.R;
 import com.example.stepappv3.database.pantry.PantryItem;
+import com.example.stepappv3.database.pantry.PantryItemDisplay;
 import com.google.android.material.button.MaterialButton;
 
-public class PantryListAdapter extends ListAdapter<PantryItem, PantryListAdapter.PantryItemViewHolder> {
+public class PantryListAdapter extends ListAdapter<PantryItemDisplay, PantryListAdapter.PantryItemViewHolder> {
 
-    // 1. Define a new, simpler listener interface
     public interface OnEditItemClickListener {
-        void onEditClicked(PantryItem item);
+        void onEditClicked(PantryItemDisplay item);
     }
 
     private final OnEditItemClickListener editListener;
 
-    // 2. The constructor now only needs one listener
     public PantryListAdapter(@NonNull OnEditItemClickListener listener) {
         super(DIFF_CALLBACK);
         this.editListener = listener;
@@ -37,14 +36,9 @@ public class PantryListAdapter extends ListAdapter<PantryItem, PantryListAdapter
 
     @Override
     public void onBindViewHolder(@NonNull PantryItemViewHolder holder, int position) {
-        PantryItem currentItem = getItem(position);
-        // Pass the item and the listener to the ViewHolder
+        PantryItemDisplay currentItem = getItem(position);
         holder.bind(currentItem, editListener);
     }
-
-    /**
-     * The ViewHolder class. It's now much simpler.
-     */
     static class PantryItemViewHolder extends RecyclerView.ViewHolder {
         private final TextView itemNameTextView;
         private final TextView itemQuantityTextView;
@@ -57,29 +51,23 @@ public class PantryListAdapter extends ListAdapter<PantryItem, PantryListAdapter
             editButton = itemView.findViewById(R.id.edit_item_button);
         }
 
-        // 3. The bind method now sets a single, simple click listener
-        public void bind(PantryItem item, OnEditItemClickListener listener) {
+        public void bind(PantryItemDisplay item, OnEditItemClickListener listener) {
             itemNameTextView.setText(item.name);
             itemQuantityTextView.setText(String.format("%d %s", item.quantity, item.unit));
 
             editButton.setOnClickListener(v -> listener.onEditClicked(item));
         }
     }
-
-    /**
-     * The DiffUtil.ItemCallback remains the same and is perfect for ListAdapter.
-     */
-    private static final DiffUtil.ItemCallback<PantryItem> DIFF_CALLBACK = new DiffUtil.ItemCallback<PantryItem>() {
+    private static final DiffUtil.ItemCallback<PantryItemDisplay> DIFF_CALLBACK = new DiffUtil.ItemCallback<PantryItemDisplay>() {
         @Override
-        public boolean areItemsTheSame(@NonNull PantryItem oldItem, @NonNull PantryItem newItem) {
-            return oldItem.id == newItem.id;
+        public boolean areItemsTheSame(@NonNull PantryItemDisplay oldItem, @NonNull PantryItemDisplay newItem) {
+            return oldItem.masterIngredientId == newItem.masterIngredientId;
         }
 
         @Override
-        public boolean areContentsTheSame(@NonNull PantryItem oldItem, @NonNull PantryItem newItem) {
-            return oldItem.name.equals(newItem.name) &&
-                    oldItem.quantity == newItem.quantity &&
-                    oldItem.unit.equals(newItem.unit);
+        public boolean areContentsTheSame(@NonNull PantryItemDisplay oldItem, @NonNull PantryItemDisplay newItem) {
+
+            return oldItem.equals(newItem);
         }
     };
 }

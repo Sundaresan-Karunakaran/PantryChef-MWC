@@ -1,6 +1,9 @@
 package com.example.stepappv3.ui.pantry;
 
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,6 +18,7 @@ import androidx.fragment.app.DialogFragment;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.example.stepappv3.R;
+import com.example.stepappv3.database.ingredient.MasterIngredient;
 import com.example.stepappv3.database.pantry.PantryItem;
 import com.google.android.material.textfield.TextInputEditText;
 
@@ -26,7 +30,7 @@ public class PantryAddItemManualFragment extends DialogFragment {
 
     private PantryViewModel pantryViewModel;
 
-    private TextInputEditText nameEditText;
+    private AutoCompleteTextView nameAutoCompleteTextView;
     private AutoCompleteTextView categoryAutoComplete;
     private TextInputEditText quantityEditText;
     private AutoCompleteTextView unitAutoComplete;
@@ -34,11 +38,12 @@ public class PantryAddItemManualFragment extends DialogFragment {
     private Button saveButton;
     private boolean isEditMode = false;
     private int editingItemId = -1;
+    private ArrayAdapter<String> autoCompleteAdapter;
+    private MasterIngredient selectedIngredient = null;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        // Inflate the custom layout you designed.
         return inflater.inflate(R.layout.pantry_add_manual, container, false);
     }
 
@@ -46,30 +51,72 @@ public class PantryAddItemManualFragment extends DialogFragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // Get a reference to the parent fragment's ViewModel.
-        // This is the correct way for a dialog to share a ViewModel.
         pantryViewModel = new ViewModelProvider(requireParentFragment()).get(PantryViewModel.class);
-
-        // Find all the UI elements from the inflated view.
-        nameEditText = view.findViewById(R.id.name_input_edittext);
-        categoryAutoComplete = view.findViewById(R.id.category_input_autocomplete);
-        quantityEditText = view.findViewById(R.id.quantity_input_edittext);
-        unitAutoComplete = view.findViewById(R.id.unit_input_autocomplete);
-        cancelButton = view.findViewById(R.id.cancel_button);
-        saveButton = view.findViewById(R.id.save_button);
-
-        // Set up the logic for the views.
+        initializeViews(view);
+        setupAutoComplete();
+        setupObservers();
         setupCategoryDropdown();
         setupUnitDropdown();
         setupClickListeners();
         checkForEditMode();
     }
 
+    private void initializeViews(View view) {
+        nameAutoCompleteTextView = view.findViewById(R.id.name_input_edittext);
+        categoryAutoComplete = view.findViewById(R.id.category_input_autocomplete);
+        quantityEditText = view.findViewById(R.id.quantity_input_edittext);
+        unitAutoComplete = view.findViewById(R.id.unit_input_autocomplete);
+        cancelButton = view.findViewById(R.id.cancel_button);
+        saveButton = view.findViewById(R.id.save_button);
+    }
+    private void setupAutoComplete() {
+        autoCompleteAdapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_dropdown_item_1line, new ArrayList<>());
+        nameAutoCompleteTextView.setAdapter(autoCompleteAdapter);
+
+        nameAutoCompleteTextView.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                selectedIngredient = null;
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                if (s.length() > 1) {
+                    pantryViewModel.searchMasterIngredients(s.toString());
+                }
+            }
+        });
+
+        nameAutoCompleteTextView.setOnItemClickListener((parent, view, position, id) -> {
+            String selectedName = (String) parent.getItemAtPosition(position);
+            if (pantryViewModel.searchResults.getValue() != null) {
+                pantryViewModel.searchResults.getValue().stream()
+                        .filter(ingredient -> ingredient.name.equals(selectedName))
+                        .findFirst()
+                        .ifPresent(ingredient -> selectedIngredient = ingredient);
+            }
+        });
+    }
+
+    private void setupObservers() {
+        pantryViewModel.searchResults.observe(getViewLifecycleOwner(), masterIngredients -> {
+            if (masterIngredients != null) {
+                autoCompleteAdapter.clear();
+                List<String> names = masterIngredients.stream()
+                        .map(ingredient -> ingredient.name)
+                        .collect(Collectors.toList());
+                autoCompleteAdapter.addAll(names);
+                autoCompleteAdapter.notifyDataSetChanged();
+            }
+        });
+    }
+
     private void setupCategoryDropdown() {
-        // We observe the categories from the ViewModel to populate our dropdown.
         pantryViewModel.categories.observe(getViewLifecycleOwner(), categories -> {
             if (categories != null && !categories.isEmpty()) {
-                // We need a list of strings for the adapter, not a list of PantryCategory objects.
                 List<String> categoryNames = categories.stream()
                         .map(PantryCategory::getName)
                         .collect(Collectors.toList());
@@ -81,17 +128,12 @@ public class PantryAddItemManualFragment extends DialogFragment {
         });
     }
     private void setupUnitDropdown() {
-        // 1. Define the array of unit options.
         String[] units = new String[]{"g", "ml", "No Unit"};
-
-        // 2. Create the adapter to bridge the data and the UI.
         ArrayAdapter<String> adapter = new ArrayAdapter<>(
                 requireContext(),
                 android.R.layout.simple_dropdown_item_1line,
                 units
         );
-
-        // 3. Set the adapter on the AutoCompleteTextView.
         unitAutoComplete.setAdapter(adapter);
     }
 
@@ -100,22 +142,32 @@ public class PantryAddItemManualFragment extends DialogFragment {
         cancelButton.setOnClickListener(v -> dismiss());
 
         saveButton.setOnClickListener(v -> {
-            // When save is clicked, we validate and save the data.
             savePantryItem();
         });
     }
 
     private void savePantryItem() {
-        String name = nameEditText.getText().toString().trim();
         String category = categoryAutoComplete.getText().toString().trim();
         String quantityStr = quantityEditText.getText().toString().trim();
         String unit = unitAutoComplete.getText().toString().trim();
-
-        // --- Data Validation ---
-        if (name.isEmpty()) {
-            nameEditText.setError("Item name cannot be empty");
+        String nameInput = nameAutoCompleteTextView.getText().toString().trim();
+        if (selectedIngredient == null) {
+            // Get the current list of search results from the ViewModel.
+            List<MasterIngredient> currentResults = pantryViewModel.searchResults.getValue();
+            if (currentResults != null) {
+                currentResults.stream()
+                        .filter(ingredient -> ingredient.name.equalsIgnoreCase(nameInput))
+                        .findFirst()
+                        .ifPresent(matchedIngredient -> selectedIngredient = matchedIngredient);
+            }
+        }
+        if (selectedIngredient == null) {
+            nameAutoCompleteTextView.setError("Please select a valid ingredient from the list.");
+            Toast.makeText(getContext(), "Please select a valid ingredient", Toast.LENGTH_SHORT).show();
             return;
         }
+        nameAutoCompleteTextView.setError(null);
+
         if (category.isEmpty()) {
             categoryAutoComplete.setError("Please select a category");
             return;
@@ -128,10 +180,6 @@ public class PantryAddItemManualFragment extends DialogFragment {
             unitAutoComplete.setError("Please select a unit");
             return;
         }
-        if (!name.matches("[a-zA-Z ]+")) {
-            nameEditText.setError("Name can only contain letters and spaces");
-            return;
-        }
 
         int quantity;
         try {
@@ -141,42 +189,42 @@ public class PantryAddItemManualFragment extends DialogFragment {
             return;
         }
         String currentUserId = pantryViewModel.getUserId();
-        // --- Save the Item ---
-        // Create the new PantryItem object.
-        if (isEditMode) {
 
-            PantryItem updatedItem = new PantryItem(name, category, quantity, unit, currentUserId);
-            updatedItem.id = editingItemId;
-            PantryListViewModel listViewModel = new ViewModelProvider(requireParentFragment()).get(PantryListViewModel.class);
-            listViewModel.updatePantryItem(updatedItem);
-            Toast.makeText(getContext(), name + " updated", Toast.LENGTH_SHORT).show();
+        if (isEditMode) {
+            PantryItem updatedItem = new PantryItem(selectedIngredient.id, category, quantity, unit, currentUserId);
+            updatedItem.masterIngredientId = editingItemId;
+            pantryViewModel.updatePantryItem(updatedItem);
+            Toast.makeText(getContext(), selectedIngredient.name + " updated", Toast.LENGTH_SHORT).show();
         } else {
-            PantryItem newItem = new PantryItem(name, category, quantity, unit, currentUserId);
+            PantryItem newItem = new PantryItem(
+                    selectedIngredient.id,
+                    category,
+                    quantity,
+                    unit,
+                    currentUserId
+            );
+
             pantryViewModel.insertPantryItem(newItem);
-            Toast.makeText(getContext(), name + " added to pantry", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), selectedIngredient.name + " added to pantry", Toast.LENGTH_SHORT).show();
         }
         dismiss();
     }
 
-    private void checkForEditMode() {        Bundle args = getArguments();
+
+    private void checkForEditMode() {
+        Bundle args = getArguments();
         if (args != null) {
-            // If arguments exist, we are in "Edit Mode".
             isEditMode = true;
-            editingItemId = args.getInt("ITEM_ID", -1);
-
-            // Pre-fill the form with the existing item's data.
-            nameEditText.setText(args.getString("ITEM_NAME"));
+            editingItemId = args.getInt("ITEM_MASTER_ID", -1);
+            String itemName = args.getString("ITEM_NAME", "");
+            Log.d("Master ID", String.valueOf(editingItemId));
+            nameAutoCompleteTextView.setText(itemName);
             quantityEditText.setText(String.valueOf(args.getInt("ITEM_QUANTITY")));
-
-            // For AutoCompleteTextView, we must set the text and also show it.
-            String unit = args.getString("ITEM_UNIT");
-            unitAutoComplete.setText(unit, false);
-
-            String category = args.getString("ITEM_CATEGORY");
-            categoryAutoComplete.setText(category, false);
-
-            // We don't pre-fill the category because the user might want to change it,
-            // and the dropdown will be populated by the ViewModel.
+            unitAutoComplete.setText(args.getString("ITEM_UNIT"), false);
+            categoryAutoComplete.setText(args.getString("ITEM_CATEGORY"), false);
+            selectedIngredient = new MasterIngredient(itemName);
+            selectedIngredient.id = editingItemId;
+            nameAutoCompleteTextView.setEnabled(false);
         }
     }
 }

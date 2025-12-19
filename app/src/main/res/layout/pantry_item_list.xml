@@ -15,7 +15,6 @@
         android:layout_height="wrap_content"
         android:padding="16dp">
 
-        <!-- Item Name -->
         <TextView
             android:id="@+id/item_name_textview"
             android:layout_width="0dp"
@@ -27,7 +26,6 @@
             app:layout_constraintEnd_toStartOf="@+id/edit_item_button"
             tools:text="Organic Whole Milk" />
 
-        <!-- Item Quantity -->
         <TextView
             android:id="@+id/item_quantity_textview"
             android:layout_width="0dp"
@@ -38,7 +36,6 @@
             app:layout_constraintEnd_toEndOf="@id/item_name_textview"
             tools:text="1 pcs" />
 
-        <!-- The Single "Edit" Button -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/edit_item_button"
             style="?attr/materialIconButtonFilledTonalStyle"

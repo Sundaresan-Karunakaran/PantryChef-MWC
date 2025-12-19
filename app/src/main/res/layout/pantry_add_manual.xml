@@ -11,7 +11,6 @@
         android:orientation="vertical"
         android:padding="24dp">
 
-        <!-- Item Name Input -->
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/name_input_layout"
             style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
@@ -19,7 +18,7 @@
             android:layout_height="wrap_content"
             android:hint="Item Name">
 
-            <com.google.android.material.textfield.TextInputEditText
+            <com.google.android.material.textfield.MaterialAutoCompleteTextView
                 android:id="@+id/name_input_edittext"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -27,7 +26,6 @@
 
         </com.google.android.material.textfield.TextInputLayout>
 
-        <!-- Category Dropdown (ExposedDropdownMenu) -->
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/category_input_layout"
             style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
@@ -44,7 +42,6 @@
 
         </com.google.android.material.textfield.TextInputLayout>
 
-        <!-- Quantity and Unit on the same line -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -85,7 +82,6 @@
             </com.google.android.material.textfield.TextInputLayout>
         </LinearLayout>
 
-        <!-- Action Buttons -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

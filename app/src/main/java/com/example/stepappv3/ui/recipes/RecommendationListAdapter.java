@@ -39,35 +39,22 @@ public class RecommendationListAdapter extends ListAdapter<Recommendation, Recom
         Recommendation currentRecommendation = getItem(position);
         holder.bind(currentRecommendation,clickListener);
     }
-
-    /**
-     * The ViewHolder holds the view references for a single row.
-     */
     static class RecommendationViewHolder extends RecyclerView.ViewHolder {
         private final TextView recipeNameTextView;
-        private final TextView recipeInfoTextView;
         private final TextView missingCountTextView;
         private final TextView missingLabelTextView;
-
-
-
-
-
         public RecommendationViewHolder(@NonNull View itemView) {
             super(itemView);
             recipeNameTextView = itemView.findViewById(R.id.recipe_name_textview);
-            recipeInfoTextView = itemView.findViewById(R.id.recipe_info_textview);
             missingCountTextView = itemView.findViewById(R.id.missing_count_textview);
             missingLabelTextView = itemView.findViewById(R.id.missing_label_textview);
         }
 
         public void bind(Recommendation recommendation, final OnRecipeClickListener listener) {
             recipeNameTextView.setText(recommendation.recipe.name);
-            recipeInfoTextView.setText(String.format("%.0f calories", recommendation.recipe.calories));
 
-            // This is the core UI logic that makes the recommendation useful.
             if (recommendation.missingCount == 0) {
-                missingCountTextView.setText("✓"); // Using a checkmark for a perfect match.
+                missingCountTextView.setText("✓");
                 missingLabelTextView.setText("Perfect Match!");
             } else if (recommendation.missingCount == 1) {
                 missingCountTextView.setText("1");
@@ -81,19 +68,14 @@ public class RecommendationListAdapter extends ListAdapter<Recommendation, Recom
         }
     }
 
-    /**
-     * The DiffUtil helps ListAdapter calculate updates efficiently.
-     */
     private static final DiffUtil.ItemCallback<Recommendation> DIFF_CALLBACK = new DiffUtil.ItemCallback<Recommendation>() {
         @Override
         public boolean areItemsTheSame(@NonNull Recommendation oldItem, @NonNull Recommendation newItem) {
-            // Check if they are the same item by unique ID.
             return oldItem.recipe.recipeId == newItem.recipe.recipeId;
         }
 
         @Override
         public boolean areContentsTheSame(@NonNull Recommendation oldItem, @NonNull Recommendation newItem) {
-            // Check if the contents have changed, requiring a re-bind.
             return oldItem.missingCount == newItem.missingCount &&
                     oldItem.recipe.name.equals(newItem.recipe.name);
         }

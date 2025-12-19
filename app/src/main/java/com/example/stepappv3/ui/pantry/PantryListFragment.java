@@ -36,10 +36,7 @@ public class PantryListFragment extends Fragment implements PantryListAdapter.On
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // Get an instance of the ViewModel for this screen
         viewModel = new ViewModelProvider(this).get(PantryListViewModel.class);
-
-        // Find all the UI elements
         recyclerView = view.findViewById(R.id.pantry_item_recyclerview);
         emptyListTextView = view.findViewById(R.id.empty_list_textview);
         toolbar = view.findViewById(R.id.toolbar);
@@ -51,7 +48,6 @@ public class PantryListFragment extends Fragment implements PantryListAdapter.On
 
     private void setupToolbar() {
         NavController navController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment);
-        // This line automatically sets up the toolbar title and back button
         NavigationUI.setupWithNavController(toolbar, navController);
     }
 
@@ -62,15 +58,12 @@ public class PantryListFragment extends Fragment implements PantryListAdapter.On
     }
 
     private void setupObservers() {
-        // Observe the list of pantry items from the ViewModel
         viewModel.pantryItems.observe(getViewLifecycleOwner(), items -> {
             if (items != null && !items.isEmpty()) {
-                // If there are items, show the RecyclerView and submit the list to the adapter
                 recyclerView.setVisibility(View.VISIBLE);
                 emptyListTextView.setVisibility(View.GONE);
                 adapter.submitList(items);
             } else {
-                // If the list is empty, hide the RecyclerView and show the "empty state" text
                 recyclerView.setVisibility(View.GONE);
                 emptyListTextView.setVisibility(View.VISIBLE);
             }
@@ -78,18 +71,16 @@ public class PantryListFragment extends Fragment implements PantryListAdapter.On
     }
 
     @Override
-    public void onEditClicked(com.example.stepappv3.database.pantry.PantryItem item) {
+    public void onEditClicked(com.example.stepappv3.database.pantry.PantryItemDisplay item) {
 
         PantryAddItemManualFragment dialogFragment = new PantryAddItemManualFragment();
         Bundle args = new Bundle();
-        args.putInt("ITEM_ID", item.id);
         args.putString("ITEM_NAME", item.name);
         args.putInt("ITEM_QUANTITY", item.quantity);
         args.putString("ITEM_UNIT", item.unit);
         args.putString("ITEM_CATEGORY", item.category);
+        args.putInt("ITEM_MASTER_ID", item.masterIngredientId);
         dialogFragment.setArguments(args);
-
-        // Show the dialog.
         dialogFragment.show(getChildFragmentManager(), "EditPantryItemDialog");
     }
 }

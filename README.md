@@ -1,24 +1,45 @@
 # PantryChef-MWC
 
-## Basic Step Counter Skeleton
-1. Contains the step counting using accelerometer/step counter sensor
-2. Contains implementation of room to store the steps taken.
-3. Contains basic implementation of retrieving steps per minute/hour/day.
+## Steps to install and run the app
+- The google-services.json is required for Firebase. Place the file in /app .
+- final_recipes.csv and ingredients.csv is required for the initial setup. Place both the files in app/src/main/assests.
+- Place your Gemini API key in the local.properties file in the root of the project.
+
+Link to both the files are forwarded to the TAs on the email.
+
+### Login
+- Used Firebase to setup google login.
+- After login the first setup of database takes place which may take 5-10 mins. For more information open logcat to see the population happening.
+
+### Step Counter
+- Count user steps taken.
+- Currently the goal is hard coded at 100.
+
+### Profile
+
+- Login is 
+- User information.
+- Required nutrient intake information.
 
 
-## Basic Pantry UI
-1. Added Pantry to the Navbar
-2. Contains categories to classify ingredients.
-3. Allows to add ingredients Manually or with receipt
+### Visualizations
+- Bar chart for user pantry items
+- Line chart for daily steps taken
+
+### Pantry
+- Shows different categories of items.
+- Inside the category items can be edited and if quantity is made 0 then removed from the pantry.
+- User can add items manually or by adding image from gallery or clicking a photo using the camera.
+- When user adds item manually then they can only add items from the master list created during database setup so garbage values are not allowed.
+
+### Recipes
+- Queries the database to recommend recipes to the user based on the pantry.
+- Can select number of servings for recipes.
 
 
-### Gemini Parser Skeleton
-
-1. Uses gemini api key to parse image to gemini and get back list of items
- 
 
 
-### Profile 
-
-1. Added login functionality to the app using FireBase
-2. For the app to work you need to setup a firebase project and have a google-services.json and build the app
+#### Shortcomings
+- Currently the calories burned by user is not used to recommend recipes
+- Could not complete the implementation to show exact quantities of ingredients to use but it is available in the data present in the assests.
+- Tried to make database queries faster but could not find a more efficient way to do so.

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <array name="pantry_chart_colors">
+        <item>#FF6E40</item> <!-- Vibrant Orange -->
+        <item>#448AFF</item> <!-- Vibrant Blue -->
+        <item>#69F0AE</item> <!-- Vibrant Green -->
+        <item>#FFD740</item> <!-- Vibrant Yellow -->
+        <item>#B2FF59</item> <!-- Light Green -->
+        <item>#FF5252</item> <!-- Vibrant Red -->
+        <item>#7C4DFF</item> <!-- Deep Purple -->
+        <item>#40C4FF</item> <!-- Light Blue -->
+        <item>#FF65FF</item> <!-- Pink -->
+        <item>#EEFF41</item> <!-- Lime -->
+        <item>#FFAB40</item> <!-- Amber -->
+        <item>#536DFE</item> <!-- Indigo -->
+        <item>#00E676</item> <!-- Emerald Green -->
+        <item>#FFC400</item> <!-- Gold -->
+        <item>#FF3D00</item> <!-- Deep Orange -->
+        <item>#3D5AFE</item> <!-- Royal Blue -->
+        <item>#1DE9B6</item> <!-- Teal -->
+        <item>#FF9100</item> <!-- Bright Orange -->
+    </array>
+</resources>
+    

@@ -6,6 +6,8 @@ import androidx.room.Insert;
 import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
 
+import java.util.List;
+
 
 @Dao
 public interface StepDao {
@@ -30,5 +32,9 @@ public interface StepDao {
 
     @Query("SELECT SUM(steps) FROM daily_steps WHERE timestamp >= :sinceTimestamp AND userId = :userId")
     LiveData<Integer> getStepsSinceLiveDataUser(long sinceTimestamp,String userId);
+
+    @Query("SELECT (timestamp / 86400000) * 86400000 AS day, SUM(steps) as steps FROM daily_steps WHERE userId = :userId GROUP BY day ORDER BY day ASC")
+    LiveData<List<DailyStep>> getStepsGroupedByDay(String userId);
+
 
 }

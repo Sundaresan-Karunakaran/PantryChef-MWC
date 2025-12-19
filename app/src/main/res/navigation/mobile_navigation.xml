@@ -3,7 +3,14 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/mobile_navigation"
-    app:startDestination="@id/loginFragment">  <!-- THIS IS THE KEY -->
+    app:startDestination="@id/loginFragment">
+
+    <action
+        android:id="@+id/action_global_to_loginFragment"
+        app:destination="@id/loginFragment"
+        app:popUpTo="@id/mobile_navigation"
+        app:popUpToInclusive="true" />
+
 
 
     <fragment
@@ -20,7 +27,6 @@
         android:label="Complete Your Profile"
         tools:layout="@layout/fragment_profile_setup" >
 
-        <!-- In the future, you will define the action FROM this screen TO the home screen here -->
         <action
             android:id="@+id/action_profileSetupFragment_to_navigation_home"
             app:destination="@id/navigation_home"
@@ -56,7 +62,6 @@
         android:label="{categoryName}"
         tools:layout="@layout/fragment_pantry_list" >
 
-        <!-- We will define the argument it receives here -->
         <argument
             android:name="categoryName"
             app:argType="string" />
@@ -109,6 +114,12 @@
             app:argType="string" />
 
     </fragment>
+
+    <fragment
+        android:id="@+id/navigation_visualization"
+        android:name="com.example.stepappv3.ui.visualization.VisualizationFragment"
+        android:label="Visualizations"
+        tools:layout="@layout/fragment_visualization" />
 
 
 

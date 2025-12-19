@@ -22,11 +22,14 @@ public class Recipe {
     public String missingNutrients;
     public String servingSize;
     public String ingredients;
+    public String quants;
 
-    public Recipe(int recipeId,String name, String servingSize, int serving,String steps,String ingredients ,String missingNutrients,double calories,double sugar,double fat,double fiber){
+
+    public Recipe(int recipeId,String name, String servingSize, int serving,String steps,String quants,String ingredients ,String missingNutrients,double calories,double sugar,double fat,double fiber){
         this.recipeId = recipeId;
         this.name = name;
         this.steps = steps;
+        this.quants = quants;
         this.calories = calories;
         this.sugar = sugar;
         this.fat = fat;

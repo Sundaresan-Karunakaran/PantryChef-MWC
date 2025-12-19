@@ -15,19 +15,22 @@ public interface PantryDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insert(PantryItem pantryItem);
 
-    @Query("UPDATE pantry_items SET name = :name , category = :category,quantity = :quantity, unit = :unit WHERE id = :id AND userId = :userId")
-    void updateForUser(int id, String userId, String name, String category, int quantity, String unit);
 
-    @Query("DELETE FROM pantry_items WHERE id = :itemId AND userId = :userId")
+    @Query("DELETE FROM pantry_items WHERE masterIngredientId = :itemId AND userId = :userId")
     void deleteByIdUser(int itemId,String userId);
 
     @Query("SELECT * FROM pantry_items WHERE userId = :userId ORDER BY quantity ASC")
     LiveData<List<PantryItem>> getAllItemsUser(String userId);
 
-    @Query("SELECT * FROM pantry_items WHERE category = :categoryName AND userId = :userId ORDER BY quantity ASC")
-    LiveData<List<PantryItem>> getItemsByCategoryUser(String categoryName,String userId);
+    @Query("SELECT p.*,m.name FROM pantry_items p JOIN master_ingredient m ON p.masterIngredientId = m.id WHERE p.category = :categoryName AND p.userId = :userId")
+    LiveData<List<PantryItemDisplay>> getItemsByCategoryUser(String categoryName,String userId);
 
+    @Query("SELECT p.*,m.name FROM pantry_items p JOIN master_ingredient m ON p.masterIngredientId = m.id WHERE p.userId = :userId")
+    LiveData<List<PantryItemDisplay>> getItemsWithNames(String userId);
 
     @androidx.room.Update
     void update(PantryItem item);
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    void insertAll(List<PantryItem> items);
 }

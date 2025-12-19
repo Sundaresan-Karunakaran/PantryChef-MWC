@@ -14,7 +14,6 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <!-- 1. The Image Slot -->
         <ImageView
             android:id="@+id/category_image"
             android:layout_width="match_parent"
@@ -22,9 +21,8 @@
             android:scaleType="fitCenter"
             tools:src="@drawable/ic_launcher_background"
             android:contentDescription="@string/category_image_desc"
-        /> <!-- Remember to add string resources -->
+        />
 
-        <!-- 2. The Header and Subhead -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

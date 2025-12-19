@@ -1,8 +1,10 @@
 package com.example.stepappv3.gemini;
 
 import android.graphics.Bitmap;
+import android.util.Log;
 
 import com.example.stepappv3.database.pantry.PantryItem;
+import com.example.stepappv3.database.pantry.ParsedReceiptItem;
 import com.example.stepappv3.util.ParseResult;
 import com.google.ai.client.generativeai.GenerativeModel;
 import com.google.ai.client.generativeai.java.GenerativeModelFutures;
@@ -42,9 +44,9 @@ public class GeminiReceiptParser {
                             "Analyze the following receipt image. Extract each food item, its quantity, and its unit. " +
                                     "Then, classify each item into one of the following categories: " +
                                     "'Vegetables', 'Fruits', 'Dairy & Eggs', 'Meats & Seafood', 'Bakery', 'Spices','Grains and Pulses', " +
-                                    "'Uncategorized'. " +
+                                    "'Oils'. " +
                                     "For each item, return a single line in the format: Item Name | Category | Quantity | Unit. " +
-                                    "For example: 'Milk | Dairy & Eggs | 1 | ml'. Do not include headers, explanations, or any other text.Always return the Unit in metric system i.e. ml for liquids and grams for solids or none if not specified"
+                                    "For example: 'Milk | Dairy & Eggs | 1 | ml'. Do not include headers, explanations,brand names, or any other text.Always return the Unit in metric system i.e. ml for liquids and grams for solids or none if not specified"
                     )
                     .build();
 
@@ -63,7 +65,7 @@ public class GeminiReceiptParser {
                             future.complete(new ParseResult(ParseResult.Status.NO_ITEMS_FOUND, "Could not find any items on the receipt."));
                             return;
                         }
-                        List<PantryItem> items = parseTextToItems(text);
+                        List<ParsedReceiptItem> items = parseTextToItems(text);
                         if (items.isEmpty()) {
                             // We got text, but our parser found no valid items.
                             // This could be because the image was not a receipt.
@@ -90,8 +92,8 @@ public class GeminiReceiptParser {
         return future;
 
     }
-    private List<PantryItem> parseTextToItems(String rawText) {
-        List<PantryItem> items = new ArrayList<>();
+    private List<ParsedReceiptItem> parseTextToItems(String rawText) {
+        List<ParsedReceiptItem> items = new ArrayList<>();
         if (rawText == null || rawText.trim().isEmpty()) {
             return items;
         }
@@ -103,16 +105,12 @@ public class GeminiReceiptParser {
 
             if (parts.length == 4) { // We need exactly 4 parts to create an item
                 try {
-                    PantryItem item = new PantryItem();
-                    item.name = parts[0].trim();
-                    item.category = parts[1].trim();
-                    item.quantity = Integer.parseInt(parts[2].trim());
-                    item.unit = parts[3].trim();
+                    ParsedReceiptItem item = new ParsedReceiptItem(parts[1].trim(),parts[0].trim(), Integer.parseInt(parts[2].trim()), parts[3].trim());
 
-                    // Create the PantryItem with the category provided by Gemini
                     items.add(item);
-                } catch (NumberFormatException e) {
-                    // Ignore lines where the quantity is not a valid number
+                } catch (Exception e) {
+                    Log.w("GeminiParser", "Skipping malformed line: " + line,e);
+
                 }
             }
         }

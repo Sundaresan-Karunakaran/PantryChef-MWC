@@ -8,7 +8,6 @@
     android:paddingTop="8dp"
     android:paddingBottom="8dp">
 
-    <!-- Option 1: Add Manually -->
     <TextView
         android:id="@+id/option_add_manually"
         android:layout_width="match_parent"
@@ -25,7 +24,6 @@
         android:textAppearance="?attr/textAppearanceBodyLarge"
         app:drawableStartCompat="@drawable/ic_home" /> <!-- TODO: Replace with an 'edit' or 'keyboard' icon -->
 
-    <!-- Option 2: Scan Receipt -->
     <TextView
         android:id="@+id/option_scan_receipt"
         android:layout_width="match_parent"

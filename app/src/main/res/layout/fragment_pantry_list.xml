@@ -29,7 +29,6 @@
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
         tools:listitem="@layout/pantry_item_list" />
 
-    <!-- An empty state view, initially hidden -->
     <TextView
         android:id="@+id/empty_list_textview"
         android:layout_width="wrap_content"

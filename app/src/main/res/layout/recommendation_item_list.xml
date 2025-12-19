@@ -16,7 +16,6 @@
         android:layout_height="wrap_content"
         android:padding="16dp">
 
-        <!-- Recipe Name -->
         <TextView
             android:id="@+id/recipe_name_textview"
             android:layout_width="0dp"
@@ -28,7 +27,6 @@
             app:layout_constraintEnd_toStartOf="@+id/status_card"
             tools:text="Classic Pancakes" />
 
-        <!-- Recipe Info (e.g., Calories) -->
         <TextView
             android:id="@+id/recipe_info_textview"
             android:layout_width="0dp"
@@ -41,7 +39,6 @@
             app:layout_constraintEnd_toEndOf="@id/recipe_name_textview"
             tools:text="350 calories per serving" />
 
-        <!-- Status Card (The most important part) -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/status_card"
             android:layout_width="wrap_content"

@@ -11,8 +11,8 @@ import java.util.List;
 @Dao
 public interface RecipeDao {
 
-    @Query("SELECT * FROM recipes ORDER BY name ASC")
-    LiveData<List<Recipe>> getAllRecipes();
+    @Query("SELECT * FROM recipes")
+    List<Recipe> getAllRecipes();
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     void insertAllRecipes(List<Recipe> recipes);
@@ -20,6 +20,10 @@ public interface RecipeDao {
 
     @Query("SELECT * FROM recipes WHERE recipeId = :recipeId")
     LiveData<Recipe> getRecipeById(int recipeId);
+
+    @Query("SELECT r.recipeId, r.name, GROUP_CONCAT(j.masterIngredientId) AS ingredientIds FROM recipes AS r LEFT JOIN recipe_ingredient_join AS j ON r.recipeId = j.recipeId GROUP BY r.recipeId")
+    List<RecipeWithIngredients> getRecipeWithIngredients();
+
 
 
 }

@@ -7,7 +7,6 @@
     android:layout_height="match_parent"
     tools:context=".ui.login.LoginFragment">
 
-    <!-- Your App's Logo or Name -->
     <TextView
         android:id="@+id/login_title"
         android:layout_width="wrap_content"
@@ -19,7 +18,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginBottom="64dp" />
 
-    <!-- The Standard Google Sign-In Button -->
     <com.google.android.gms.common.SignInButton
         android:id="@+id/google_sign_in_button"
         android:layout_width="wrap_content"
@@ -29,8 +27,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- Loading Indicator (Initially Hidden) -->
-    <!-- This will be shown when the sign-in process is in progress -->
     <ProgressBar
         android:id="@+id/login_progress_bar"
         android:layout_width="wrap_content"

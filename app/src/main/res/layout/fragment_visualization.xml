@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="8dp"> <!-- Use smaller padding for the container -->
+
+        <!-- Card 1: Pantry Category Histogram -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:cardUseCompatPadding="true"
+            app:cardElevation="2dp"
+            app:contentPadding="16dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Pantry Items by Category"
+                    android:textAppearance="?attr/textAppearanceTitleMedium"
+                    android:layout_marginBottom="16dp"/>
+
+                <!-- The BarChart is now inside the card -->
+                <!-- A fixed height is better for charts inside a scroll view -->
+                <com.github.mikephil.charting.charts.BarChart
+                    android:id="@+id/pantry_category_chart"
+                    android:layout_width="match_parent"
+                    android:layout_height="300dp" />
+
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            style="?attr/materialCardViewOutlinedStyle"
+            app:contentPadding="16dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Daily Step Progress"
+                    android:textAppearance="?attr/textAppearanceTitleMedium"
+                    android:drawableStart="@drawable/ic_steps"
+                    android:drawablePadding="16dp"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="16dp"/>
+
+                <com.github.mikephil.charting.charts.LineChart
+                    android:id="@+id/daily_steps_chart"
+                    android:layout_width="match_parent"
+                    android:layout_height="300dp" />
+
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!--
+            FUTURE-PROOFING: When you want to add a new chart, you will
+            just copy the MaterialCardView above and paste it here,
+            changing the IDs and content as needed.
+        -->
+        <!--
+        <com.google.android.material.card.MaterialCardView
+            ... >
+            <LinearLayout ... >
+                <TextView ... text="My Next Awesome Chart" />
+                <com.github.mikephil.charting.charts.PieChart
+                    android:id="@+id/my_next_pie_chart"
+                    ... />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+        -->
+
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>
