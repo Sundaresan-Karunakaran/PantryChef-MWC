@@ -3,3 +3,5 @@
 app/src/main/assets
 */.gradle/
 /build
+.DS_Store
+/app/google-services.json

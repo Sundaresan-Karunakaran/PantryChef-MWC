@@ -3,7 +3,7 @@
 ## Steps to install and run the app
 - The google-services.json is required for Firebase. Place the file in /app .
 - final_recipes.csv and ingredients.csv is required for the initial setup. Place both the files in app/src/main/assests.
-- Place your Gemini API key in the local.properties file in the root of the project.
+- Place your Gemini API key in the local.properties file in the root of the project.Also change the sdk directory.
 
 Link to both the files are forwarded to the TAs on the email.
 
