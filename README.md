@@ -41,6 +41,7 @@ Link to both the files are forwarded to the TAs on the email.
 
 
 #### Shortcomings
-- Currently the calories burned by user is not used to recommend recipes
-- Could not complete the implementation to show exact quantities of ingredients to use but it is available in the data present in the assests.
+- Could not link the step counter and recipe recommender to recommend recipes based on calories burned.
+- Master list of items contains all the necessary names but when adding manually some items are not recognized like egg,salt,pepper etc. which we have no idea why.
+- Could not complete the implementation to show exact quantities of ingredients to use but it is available in the data present in the assests just need to create a view for quants and add it to recipe details using the repository of our database.
 - Tried to make database queries faster but could not find a more efficient way to do so.
