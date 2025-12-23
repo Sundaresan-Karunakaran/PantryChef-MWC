@@ -1,10 +1,12 @@
 # PantryChef-MWC
 
 ## Steps to install and run the app
+- Create a Firebase project and add the android app to the project with the package name com.example.stepappv3. Then add your SHA-1 fingerprint to the app by going to the project settings. Finally download the updated google-services.json. 
 - The google-services.json is required for Firebase. Place the file in /app .
 - final_recipes.csv and ingredients.csv is required for the initial setup. Place both the files in app/src/main/assests.
 - Place your Gemini API key in the local.properties file in the root of the project.Also change the sdk directory.
 - Add the link to jitpack i.e maven { url = uri("https://jitpack.io") } to the dependencyResolutionManagement in settings.gradle.kts
+- Missing an import for Log in PantryViewModel, you could comment the line or add the missing import.
 
 Link to both the files are forwarded to the TAs on the email.
 
